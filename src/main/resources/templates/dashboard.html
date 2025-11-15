@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard - SecureShare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --primary-dark: #155bb3;
+            --background-light: #f5f7fa;
+            --card-background: #ffffff;
+            --text-color: #3c4043;
+            --danger-color: #d93025;
+            --border-color: #e0e0e0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .project-title { color: var(--primary-color); font-size: 32px; font-weight: 700; }
+
+        .tagline { color: #70757a; font-size: 14px; margin-bottom: 10px; }
+
+        h2, h3 { font-weight: 600; }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+
+        .logout-btn { background-color: var(--danger-color); color: white; }
+
+        table {
+            width: 100%;
+            background: var(--card-background);
+            border-radius: 10px;
+            border-collapse: collapse;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .download-link { color: var(--primary-color); }
+        .delete-link { color: var(--danger-color); }
+
+        .upload-section {
+            background: var(--card-background);
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        /* SHARE POPUP */
+        #sharePopup {
+            display: none;
+            position: fixed;
+            left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            z-index: 9999;
+            width: 300px;
+        }
+
+        #sharePopup input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="project-title">Secure Share</div>
+    <a href="/logout" class="btn logout-btn">Logout</a>
+</div>
+
+<div class="tagline">Share your files securely</div>
+
+<h2>Welcome Back, <span th:text="${username}"></span>!</h2>
+
+<h3>Your Files</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Size</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:if="${files.size() == 0}">
+        <td colspan="4" style="text-align:center; padding:20px;">No files uploaded.</td>
+    </tr>
+
+    <tr th:each="file : ${files}">
+        <td th:text="${file.fileName}"></td>
+        <td th:text="${file.fileType}"></td>
+        <td th:text="${file.fileSize}"></td>
+
+        <td>
+            <a th:href="@{'/download/' + ${file.id}}" class="download-link">⬇️ Download</a>
+            &nbsp;|&nbsp;
+            <a th:href="@{'/delete/' + ${file.id}}" class="delete-link">🗑️ Delete</a>
+            &nbsp;|&nbsp;
+
+            <!-- CORRECTED SHARE BUTTON -->
+            <button class="btn btn-primary" style="padding:5px 10px; font-size:12px;"
+                    th:onclick="'openSharePopup(' + ${file.id} + ')'">
+                Share
+            </button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="upload-section">
+    <h3>Upload File</h3>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+</div>
+
+<!-- SHARE POPUP -->
+<div id="sharePopup">
+    <h3 style="text-align:center; margin-bottom:10px; color:#1a73e8;">Share File</h3>
+
+    <form id="shareForm" method="post">
+        <label>Enter Username:</label>
+        <input type="text" name="targetUser" required>
+
+        <br><br>
+
+        <button class="btn btn-primary" style="width:100%;">Share</button>
+        <button type="button" onclick="closeSharePopup()"
+                style="margin-top:10px; width:100%; padding:10px; border:none; background:#ccc; border-radius:6px;">
+            Cancel
+        </button>
+    </form>
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+    function openSharePopup(fileId) {
+        document.getElementById("sharePopup").style.display = "block";
+        document.getElementById("shareForm").action = "/share/" + fileId;
+    }
+
+    function closeSharePopup() {
+        document.getElementById("sharePopup").style.display = "none";
+    }
+</script>
+
+</body>
+</html>
