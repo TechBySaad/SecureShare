@@ -1,40 +1,232 @@
+<!--&lt;!&ndash;<!DOCTYPE html>&ndash;&gt;-->
+<!--&lt;!&ndash;<html xmlns:th="http://www.thymeleaf.org">&ndash;&gt;-->
+<!--&lt;!&ndash;<head>&ndash;&gt;-->
+<!--&lt;!&ndash;    <title>Register</title>&ndash;&gt;-->
+<!--&lt;!&ndash;</head>&ndash;&gt;-->
+<!--&lt;!&ndash;<body>&ndash;&gt;-->
+
+<!--&lt;!&ndash;<h2>Create Account</h2>&ndash;&gt;-->
+
+<!--&lt;!&ndash;<p th:text="${error}" style="color:red"></p>&ndash;&gt;-->
+<!--&lt;!&ndash;<p th:text="${success}" style="color:green"></p>&ndash;&gt;-->
+
+<!--&lt;!&ndash;<form th:action="@{/register}" th:object="${user}" method="post">&ndash;&gt;-->
+
+<!--&lt;!&ndash;    <label>Username:</label>&ndash;&gt;-->
+<!--&lt;!&ndash;    <input type="text" th:field="*{username}" required><br><br>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    <label>Email:</label>&ndash;&gt;-->
+<!--&lt;!&ndash;    <input type="email" th:field="*{email}" required><br><br>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    <label>Password:</label>&ndash;&gt;-->
+<!--&lt;!&ndash;    <input type="password" th:field="*{password}" required><br><br>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    <button type="submit">Register</button>&ndash;&gt;-->
+
+<!--&lt;!&ndash;</form>&ndash;&gt;-->
+
+<!--&lt;!&ndash;<a href="/login">Back to Login</a>&ndash;&gt;-->
+
+<!--&lt;!&ndash;</body>&ndash;&gt;-->
+<!--&lt;!&ndash;</html>&ndash;&gt;-->
+
+
+
+
+
+<!--&lt;!&ndash;WITH ADDED CSS&ndash;&gt;-->
+
 <!--<!DOCTYPE html>-->
 <!--<html xmlns:th="http://www.thymeleaf.org">-->
 <!--<head>-->
-<!--    <title>Register</title>-->
+<!--    <title>Register - SecureShare</title>-->
+<!--    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">-->
+<!--    <style>-->
+<!--        :root {-->
+<!--            &#45;&#45;primary-color: #1a73e8; /* Google Blue */-->
+<!--            &#45;&#45;primary-dark: #155bb3;-->
+<!--            &#45;&#45;background-light: #f5f7fa;-->
+<!--            &#45;&#45;card-background: #ffffff;-->
+<!--            &#45;&#45;text-color: #3c4043; /* Dark text */-->
+<!--            &#45;&#45;border-color: #e0e0e0;-->
+<!--            &#45;&#45;success-bg: #e6f4ea;-->
+<!--            &#45;&#45;success-text: #137333;-->
+<!--            &#45;&#45;error-bg: #fce8e6;-->
+<!--            &#45;&#45;error-text: #c5221f;-->
+<!--        }-->
+
+<!--        * {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            box-sizing: border-box;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            font-family: 'Inter', Arial, sans-serif;-->
+<!--            background-color: var(&#45;&#45;background-light);-->
+<!--            color: var(&#45;&#45;text-color);-->
+<!--            line-height: 1.6;-->
+<!--            min-height: 100vh;-->
+<!--            display: flex;-->
+<!--            flex-direction: column;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            padding: 20px;-->
+<!--        }-->
+
+<!--        /* -&#45;&#45; Container/Card Styling -&#45;&#45; */-->
+<!--        .container {-->
+<!--            background: var(&#45;&#45;card-background);-->
+<!--            padding: 40px 30px;-->
+<!--            border-radius: 12px;-->
+<!--            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);-->
+<!--            width: 100%;-->
+<!--            max-width: 420px;-->
+<!--            text-align: center;-->
+<!--        }-->
+
+<!--        .project-title {-->
+<!--            color: var(&#45;&#45;primary-color);-->
+<!--            font-size: 32px;-->
+<!--            font-weight: 700;-->
+<!--            margin-bottom: 5px;-->
+<!--            letter-spacing: -0.5px;-->
+<!--        }-->
+
+<!--        .tagline {-->
+<!--            color: #70757a;-->
+<!--            font-size: 14px;-->
+<!--            margin-bottom: 30px;-->
+<!--            font-weight: 500;-->
+<!--        }-->
+
+<!--        h2 {-->
+<!--            color: var(&#45;&#45;text-color);-->
+<!--            margin-bottom: 25px;-->
+<!--            font-size: 24px;-->
+<!--            font-weight: 600;-->
+<!--        }-->
+
+<!--        /* -&#45;&#45; Message Styles -&#45;&#45; */-->
+<!--        .message {-->
+<!--            padding: 12px;-->
+<!--            border-radius: 6px;-->
+<!--            margin-bottom: 20px;-->
+<!--            font-weight: 500;-->
+<!--            text-align: left;-->
+<!--            font-size: 14px;-->
+<!--        }-->
+
+<!--        .error {-->
+<!--            background-color: var(&#45;&#45;error-bg);-->
+<!--            color: var(&#45;&#45;error-text);-->
+<!--            border: 1px solid #f1c3c1;-->
+<!--        }-->
+
+<!--        .success {-->
+<!--            background-color: var(&#45;&#45;success-bg);-->
+<!--            color: var(&#45;&#45;success-text);-->
+<!--            border: 1px solid #94d0a3;-->
+<!--        }-->
+
+<!--        /* -&#45;&#45; Form Elements -&#45;&#45; */-->
+<!--        form {-->
+<!--            display: flex;-->
+<!--            flex-direction: column;-->
+<!--            text-align: left;-->
+<!--        }-->
+
+<!--        label {-->
+<!--            margin-bottom: 8px;-->
+<!--            font-weight: 500;-->
+<!--            color: var(&#45;&#45;text-color);-->
+<!--            font-size: 14px;-->
+<!--        }-->
+
+<!--        input[type="text"],-->
+<!--        input[type="email"],-->
+<!--        input[type="password"] {-->
+<!--            padding: 14px;-->
+<!--            margin-bottom: 25px;-->
+<!--            border: 1px solid var(&#45;&#45;border-color);-->
+<!--            border-radius: 6px;-->
+<!--            font-size: 16px;-->
+<!--            transition: border-color 0.3s, box-shadow 0.3s;-->
+<!--            background-color: #fcfcfc;-->
+<!--        }-->
+
+<!--        input[type="text"]:focus,-->
+<!--        input[type="email"]:focus,-->
+<!--        input[type="password"]:focus {-->
+<!--            outline: none;-->
+<!--            border-color: var(&#45;&#45;primary-color);-->
+<!--            box-shadow: 0 0 0 1px var(&#45;&#45;primary-color);-->
+<!--            background-color: var(&#45;&#45;card-background);-->
+<!--        }-->
+
+<!--        /* -&#45;&#45; Button -&#45;&#45; */-->
+<!--        button {-->
+<!--            background-color: var(&#45;&#45;primary-color);-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            padding: 14px;-->
+<!--            border-radius: 6px;-->
+<!--            font-size: 16px;-->
+<!--            font-weight: 600;-->
+<!--            cursor: pointer;-->
+<!--            transition: background-color 0.3s, box-shadow 0.3s;-->
+<!--            margin-bottom: 30px;-->
+<!--        }-->
+
+<!--        button:hover {-->
+<!--            background-color: var(&#45;&#45;primary-dark);-->
+<!--            box-shadow: 0 2px 5px rgba(26, 115, 232, 0.3);-->
+<!--        }-->
+
+<!--        /* -&#45;&#45; Link -&#45;&#45; */-->
+<!--        .login-link {-->
+<!--            color: var(&#45;&#45;primary-color);-->
+<!--            text-decoration: none;-->
+<!--            text-align: center;-->
+<!--            display: block;-->
+<!--            font-weight: 500;-->
+<!--            font-size: 15px;-->
+<!--        }-->
+
+<!--        .login-link:hover {-->
+<!--            text-decoration: underline;-->
+<!--            color: var(&#45;&#45;primary-dark);-->
+<!--        }-->
+<!--    </style>-->
 <!--</head>-->
 <!--<body>-->
+<!--<div class="container">-->
+<!--    <div class="project-title">Secure Share</div>-->
+<!--    <div class="tagline">Share your files securely.</div>-->
 
-<!--<h2>Create Account</h2>-->
+<!--    <h2>Sign Up</h2>-->
 
-<!--<p th:text="${error}" style="color:red"></p>-->
-<!--<p th:text="${success}" style="color:green"></p>-->
+<!--    <p th:if="${error}" class="message error">⚠️ <span th:text="${error}"></span></p>-->
+<!--    <p th:if="${success}" class="message success">✅ <span th:text="${success}"></span></p>-->
 
-<!--<form th:action="@{/register}" th:object="${user}" method="post">-->
+<!--    <form th:action="@{/register}" th:object="${user}" method="post">-->
+<!--        <label for="username">Username</label>-->
+<!--        <input type="text" id="username" th:field="*{username}" placeholder="Choose a unique username" required>-->
 
-<!--    <label>Username:</label>-->
-<!--    <input type="text" th:field="*{username}" required><br><br>-->
+<!--        <label for="email">Email Address</label>-->
+<!--        <input type="email" id="email" th:field="*{email}" placeholder="your.email@example.com" required>-->
 
-<!--    <label>Email:</label>-->
-<!--    <input type="email" th:field="*{email}" required><br><br>-->
+<!--        <label for="password">Password</label>-->
+<!--        <input type="password" id="password" th:field="*{password}" placeholder="Must be at least 8 characters" required>-->
 
-<!--    <label>Password:</label>-->
-<!--    <input type="password" th:field="*{password}" required><br><br>-->
+<!--        <button type="submit">Create My Account</button>-->
+<!--    </form>-->
 
-<!--    <button type="submit">Register</button>-->
-
-<!--</form>-->
-
-<!--<a href="/login">Back to Login</a>-->
-
+<!--    <a href="/login" class="login-link">Already have an account? Log In</a>-->
+<!--</div>-->
 <!--</body>-->
 <!--</html>-->
 
-
-
-
-
-<!--WITH ADDED CSS-->
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
@@ -43,11 +235,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1a73e8; /* Google Blue */
+            --primary-color: #1a73e8;
             --primary-dark: #155bb3;
             --background-light: #f5f7fa;
             --card-background: #ffffff;
-            --text-color: #3c4043; /* Dark text */
+            --text-color: #3c4043;
             --border-color: #e0e0e0;
             --success-bg: #e6f4ea;
             --success-text: #137333;
@@ -69,12 +261,34 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+
+        /* --- Header Styling (Shared) --- */
+        .app-header {
+            background-color: var(--card-background);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .project-title {
+            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* --- Main Content Area (Centralized) --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
 
-        /* --- Container/Card Styling --- */
         .container {
             background: var(--card-background);
             padding: 40px 30px;
@@ -85,12 +299,11 @@
             text-align: center;
         }
 
-        .project-title {
-            color: var(--primary-color);
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            letter-spacing: -0.5px;
+        .container h2 {
+            color: var(--text-color);
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 600;
         }
 
         .tagline {
@@ -98,13 +311,6 @@
             font-size: 14px;
             margin-bottom: 30px;
             font-weight: 500;
-        }
-
-        h2 {
-            color: var(--text-color);
-            margin-bottom: 25px;
-            font-size: 24px;
-            font-weight: 600;
         }
 
         /* --- Message Styles --- */
@@ -116,113 +322,81 @@
             text-align: left;
             font-size: 14px;
         }
-
-        .error {
-            background-color: var(--error-bg);
-            color: var(--error-text);
-            border: 1px solid #f1c3c1;
-        }
-
-        .success {
-            background-color: var(--success-bg);
-            color: var(--success-text);
-            border: 1px solid #94d0a3;
-        }
+        .error { background-color: var(--error-bg); color: var(--error-text); border: 1px solid #f1c3c1; }
+        .success { background-color: var(--success-bg); color: var(--success-text); border: 1px solid #94d0a3; }
 
         /* --- Form Elements --- */
-        form {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-        }
-
-        label {
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-color);
-            font-size: 14px;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            padding: 14px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+        form { display: flex; flex-direction: column; text-align: left; }
+        label { margin-bottom: 8px; font-weight: 500; color: var(--text-color); font-size: 14px; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            padding: 14px; margin-bottom: 25px; border: 1px solid var(--border-color);
+            border-radius: 6px; font-size: 16px; transition: border-color 0.3s, box-shadow 0.3s;
             background-color: #fcfcfc;
         }
+        input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); background-color: var(--card-background); }
 
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 1px var(--primary-color);
-            background-color: var(--card-background);
-        }
-
-        /* --- Button --- */
+        /* --- Button & Link --- */
         button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s, box-shadow 0.3s;
-            margin-bottom: 30px;
+            background-color: var(--primary-color); color: white; border: none; padding: 14px;
+            border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s; margin-bottom: 30px;
         }
+        button:hover { background-color: var(--primary-dark); box-shadow: 0 2px 5px rgba(26, 115, 232, 0.3); }
 
-        button:hover {
-            background-color: var(--primary-dark);
-            box-shadow: 0 2px 5px rgba(26, 115, 232, 0.3);
-        }
-
-        /* --- Link --- */
         .login-link {
-            color: var(--primary-color);
-            text-decoration: none;
-            text-align: center;
-            display: block;
-            font-weight: 500;
-            font-size: 15px;
+            color: var(--primary-color); text-decoration: none; text-align: center;
+            display: block; font-weight: 500; font-size: 15px;
         }
+        .login-link:hover { text-decoration: underline; color: var(--primary-dark); }
 
-        .login-link:hover {
-            text-decoration: underline;
-            color: var(--primary-dark);
+        /* --- Footer Styling (Shared) --- */
+        .app-footer {
+            margin-top: auto;
+            background-color: #e9ecef;
+            color: #6c757d;
+            padding: 15px 40px;
+            text-align: center;
+            font-size: 13px;
+            border-top: 1px solid var(--border-color);
         }
+        .app-footer a { color: #6c757d; text-decoration: none; margin: 0 10px; }
+        .app-footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="project-title">Secure Share</div>
-    <div class="tagline">Share your files securely.</div>
+<header class="app-header">
+    <a href="/" class="project-title">Secure Share</a>
+</header>
 
-    <h2>Sign Up</h2>
+<div class="main-content">
+    <div class="container">
+        <h2>Create Account</h2>
+        <div class="tagline">Share your files securely.</div>
 
-    <p th:if="${error}" class="message error">⚠️ <span th:text="${error}"></span></p>
-    <p th:if="${success}" class="message success">✅ <span th:text="${success}"></span></p>
+        <p th:if="${error}" class="message error">⚠️ <span th:text="${error}"></span></p>
+        <p th:if="${success}" class="message success">✅ <span th:text="${success}"></span></p>
 
-    <form th:action="@{/register}" th:object="${user}" method="post">
-        <label for="username">Username</label>
-        <input type="text" id="username" th:field="*{username}" placeholder="Choose a unique username" required>
+        <form th:action="@{/register}" th:object="${user}" method="post">
+            <label for="username">Username</label>
+            <input type="text" id="username" th:field="*{username}" placeholder="Choose a unique username" required>
 
-        <label for="email">Email Address</label>
-        <input type="email" id="email" th:field="*{email}" placeholder="your.email@example.com" required>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" th:field="*{email}" placeholder="your.email@example.com" required>
 
-        <label for="password">Password</label>
-        <input type="password" id="password" th:field="*{password}" placeholder="Must be at least 8 characters" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" th:field="*{password}" placeholder="Must be at least 8 characters" required>
 
-        <button type="submit">Create My Account</button>
-    </form>
+            <button type="submit">Create My Account</button>
+        </form>
 
-    <a href="/login" class="login-link">Already have an account? Log In</a>
+        <a href="/login" class="login-link">Already have an account? Log In</a>
+    </div>
 </div>
+
+<footer class="app-footer">
+    &copy; 2024 Secure Share. All rights reserved.
+    <a href="#">Privacy Policy</a> |
+    <a href="#">Terms of Service</a>
+</footer>
 </body>
 </html>

@@ -107,4 +107,16 @@ public class FileEntity {
     public void setData(byte[] data) {
         this.data = data;
     }
+
+    /// This method converts the file size from bytes to megabytes for display purposes
+    /// The @Transient annotation means this method is NOT stored in the database
+    /// It's a calculated property that we can use in our views and controllers
+    @Transient
+    public String getFileSizeMB() {
+        /// Convert bytes to megabytes (1 MB = 1024 * 1024 bytes)
+        double mb = (double) fileSize / (1024 * 1024);
+        /// Format the result to show 2 decimal places for readability
+        return String.format("%.2f MB", mb);
+    }
+
 }

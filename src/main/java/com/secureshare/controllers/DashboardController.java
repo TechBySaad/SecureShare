@@ -1,5 +1,6 @@
 package com.secureshare.controllers;
 
+import com.secureshare.models.FileEntity;
 import com.secureshare.services.FileService;
 import com.secureshare.services.UserService;
 import org.springframework.security.core.Authentication;
@@ -7,38 +8,50 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.List;
+
+/// This controller handles the main dashboard page that users see after logging in
+/// It's the central hub where users can view their files and storage information
 @Controller
 public class DashboardController {
 
     private final FileService fileService;
     private final UserService userService;
 
-    /// Constructor that Spring uses to inject both FileService and UserService dependencies
-    /// These services handle file operations and user-related business logic respectively
+    /// Constructor that Spring uses to inject both service dependencies
+    /// FileService handles file operations, UserService handles user data
     public DashboardController(FileService fileService, UserService userService) {
         this.fileService = fileService;
         this.userService = userService;
     }
 
-    /// Handles GET requests to the /dashboard URL - the main user dashboard after login
+    /// Handles the main dashboard page request - this is what users see after logging in
     /// Spring Security automatically provides the Authentication object for the logged-in user
     @GetMapping("/dashboard")
     public String dashboard(Authentication auth, Model model) {
 
-        /// Extract the username from the authentication object
-        /// This gives us the currently logged-in user's identifier
+        /// Get the username of the currently logged-in user from Spring Security
+        /// This ensures each user only sees their own files and data
         String username = auth.getName();
 
-        /// Add the username to the model so it can be displayed in the dashboard view
-        /// This personalizes the dashboard for each user
+        // Add username to the model so it can be displayed in the dashboard
+        /// This personalizes the dashboard by showing who is currently logged in
         model.addAttribute("username", username);
 
-        /// Fetch all files belonging to the current user and add them to the model
-        /// This populates the file list that users see on their dashboard
-        model.addAttribute("files", fileService.getFilesByUser(username));
+        // Add list of files belonging to this user
+        /// Fetch all files that this specific user has uploaded
+        /// The files are typically displayed in a table or list on the dashboard
+        List<FileEntity> files = fileService.getFilesByUser(username);
+        model.addAttribute("files", files);
 
-        /// Return the dashboard view template name
-        /// Spring MVC will look for a template called "dashboard.html" (or similar)
+        // Add total storage used (formatted in MB for easy reading)
+        /// Calculate how much storage space the user has consumed
+        /// This helps users manage their storage limits and see their usage
+        String totalStorageFormattedMB = fileService.getTotalStorageFormatted(username);
+        model.addAttribute("totalStorageFormattedMB", totalStorageFormattedMB);
+
+        /// Return the dashboard view template
+        /// Spring will look for a template called "dashboard.html" to render
         return "dashboard";
     }
 }
