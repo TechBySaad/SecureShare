@@ -1,6 +1,6 @@
-package com.secureshare.repositories;
+package com.secureshare.TechBySaad.repositories;
 
-import com.secureshare.models.FileEntity;
+import com.secureshare.TechBySaad.models.FileEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

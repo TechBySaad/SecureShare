@@ -1,4 +1,4 @@
-package com.secureshare;
+package com.secureshare.TechBySaad;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

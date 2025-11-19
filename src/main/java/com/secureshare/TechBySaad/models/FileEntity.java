@@ -1,4 +1,4 @@
-package com.secureshare.models;
+package com.secureshare.TechBySaad.models;
 
 import jakarta.persistence.*;
 

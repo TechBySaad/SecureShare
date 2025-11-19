@@ -1,518 +1,21 @@
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--    <title>Dashboard - SecureShare</title>-->
-<!--    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">-->
-
-<!--    <style>-->
-<!--        :root {-->
-<!--            &#45;&#45;primary-color: #1a73e8;-->
-<!--            &#45;&#45;primary-dark: #155bb3;-->
-<!--            &#45;&#45;background-light: #f5f7fa;-->
-<!--            &#45;&#45;card-background: #ffffff;-->
-<!--            &#45;&#45;text-color: #3c4043;-->
-<!--            &#45;&#45;danger-color: #d93025;-->
-<!--            &#45;&#45;border-color: #e0e0e0;-->
-<!--        }-->
-
-<!--        * { margin: 0; padding: 0; box-sizing: border-box; }-->
-
-<!--        body {-->
-<!--            font-family: 'Inter', Arial, sans-serif;-->
-<!--            background-color: var(&#45;&#45;background-light);-->
-<!--            color: var(&#45;&#45;text-color);-->
-<!--            line-height: 1.6;-->
-<!--            padding: 20px;-->
-<!--            max-width: 1200px;-->
-<!--            margin: 0 auto;-->
-<!--        }-->
-
-<!--        .header {-->
-<!--            display: flex;-->
-<!--            justify-content: space-between;-->
-<!--            align-items: center;-->
-<!--            margin-bottom: 30px;-->
-<!--            padding-bottom: 20px;-->
-<!--            border-bottom: 1px solid var(&#45;&#45;border-color);-->
-<!--        }-->
-
-<!--        .project-title { color: var(&#45;&#45;primary-color); font-size: 32px; font-weight: 700; }-->
-
-<!--        .tagline { color: #70757a; font-size: 14px; margin-bottom: 10px; }-->
-
-<!--        h2, h3 { font-weight: 600; }-->
-
-<!--        .btn {-->
-<!--            padding: 10px 20px;-->
-<!--            border-radius: 6px;-->
-<!--            font-size: 14px;-->
-<!--            font-weight: 500;-->
-<!--            cursor: pointer;-->
-<!--            border: none;-->
-<!--        }-->
-
-<!--        .btn-primary { background-color: var(&#45;&#45;primary-color); color: white; }-->
-<!--        .btn-primary:hover { background-color: var(&#45;&#45;primary-dark); }-->
-
-<!--        .logout-btn { background-color: var(&#45;&#45;danger-color); color: white; }-->
-
-<!--        table {-->
-<!--            width: 100%;-->
-<!--            background: var(&#45;&#45;card-background);-->
-<!--            border-radius: 10px;-->
-<!--            border-collapse: collapse;-->
-<!--            box-shadow: 0 1px 3px rgba(0,0,0,0.1);-->
-<!--            margin-bottom: 30px;-->
-<!--        }-->
-
-<!--        th {-->
-<!--            background-color: var(&#45;&#45;primary-color);-->
-<!--            color: white;-->
-<!--            padding: 15px;-->
-<!--            text-align: left;-->
-<!--        }-->
-
-<!--        td {-->
-<!--            padding: 15px;-->
-<!--            border-bottom: 1px solid var(&#45;&#45;border-color);-->
-<!--        }-->
-
-<!--        .download-link { color: var(&#45;&#45;primary-color); }-->
-<!--        .delete-link { color: var(&#45;&#45;danger-color); }-->
-
-<!--        .upload-section {-->
-<!--            background: var(&#45;&#45;card-background);-->
-<!--            padding: 30px;-->
-<!--            border-radius: 10px;-->
-<!--            margin-top: 20px;-->
-<!--        }-->
-
-<!--        /* SHARE POPUP */-->
-<!--        #sharePopup {-->
-<!--            display: none;-->
-<!--            position: fixed;-->
-<!--            left: 50%; top: 50%;-->
-<!--            transform: translate(-50%, -50%);-->
-<!--            background: white;-->
-<!--            padding: 20px;-->
-<!--            border-radius: 10px;-->
-<!--            box-shadow: 0 6px 20px rgba(0,0,0,0.2);-->
-<!--            z-index: 9999;-->
-<!--            width: 300px;-->
-<!--        }-->
-
-<!--        #sharePopup input {-->
-<!--            width: 100%;-->
-<!--            padding: 8px;-->
-<!--            border: 1px solid #ccc;-->
-<!--            border-radius: 6px;-->
-<!--            margin-top: 8px;-->
-<!--        }-->
-<!--    </style>-->
-<!--</head>-->
-
-<!--<body>-->
-
-<!--<div class="header">-->
-<!--    <div class="project-title">Secure Share</div>-->
-<!--    <a href="/logout" class="btn logout-btn">Logout</a>-->
-<!--</div>-->
-
-<!--<div class="tagline">Share your files securely</div>-->
-
-<!--<h2>Welcome Back, <span th:text="${username}"></span>!</h2>-->
-
-<!--<h3>Your Files</h3>-->
-
-<!--<table>-->
-<!--    <thead>-->
-<!--    <tr>-->
-<!--        <th>Name</th>-->
-<!--        <th>Type</th>-->
-<!--        <th>Size</th>-->
-<!--        <th>Actions</th>-->
-<!--    </tr>-->
-<!--    </thead>-->
-
-<!--    <tbody>-->
-<!--    <tr th:if="${files.size() == 0}">-->
-<!--        <td colspan="4" style="text-align:center; padding:20px;">No files uploaded.</td>-->
-<!--    </tr>-->
-
-<!--    <tr th:each="file : ${files}">-->
-<!--        <td th:text="${file.fileName}"></td>-->
-<!--        <td th:text="${file.fileType}"></td>-->
-<!--        <td th:text="${file.fileSize}"></td>-->
-
-<!--        <td>-->
-<!--            <a th:href="@{'/download/' + ${file.id}}" class="download-link">⬇️ Download</a>-->
-<!--            &nbsp;|&nbsp;-->
-<!--            <a th:href="@{'/delete/' + ${file.id}}" class="delete-link">🗑️ Delete</a>-->
-<!--            &nbsp;|&nbsp;-->
-
-<!--            &lt;!&ndash; CORRECTED SHARE BUTTON &ndash;&gt;-->
-<!--            <button class="btn btn-primary" style="padding:5px 10px; font-size:12px;"-->
-<!--                    th:onclick="'openSharePopup(' + ${file.id} + ')'">-->
-<!--                Share-->
-<!--            </button>-->
-<!--        </td>-->
-<!--    </tr>-->
-<!--    </tbody>-->
-<!--</table>-->
-
-<!--<div class="upload-section">-->
-<!--    <h3>Upload File</h3>-->
-<!--    <form action="/upload" method="post" enctype="multipart/form-data">-->
-<!--        <input type="file" name="file" required>-->
-<!--        <button type="submit" class="btn btn-primary">Upload</button>-->
-<!--    </form>-->
-<!--</div>-->
-
-<!--&lt;!&ndash; SHARE POPUP &ndash;&gt;-->
-<!--<div id="sharePopup">-->
-<!--    <h3 style="text-align:center; margin-bottom:10px; color:#1a73e8;">Share File</h3>-->
-
-<!--    <form id="shareForm" method="post">-->
-<!--        <label>Enter Username:</label>-->
-<!--        <input type="text" name="targetUser" required>-->
-
-<!--        <br><br>-->
-
-<!--        <button class="btn btn-primary" style="width:100%;">Share</button>-->
-<!--        <button type="button" onclick="closeSharePopup()"-->
-<!--                style="margin-top:10px; width:100%; padding:10px; border:none; background:#ccc; border-radius:6px;">-->
-<!--            Cancel-->
-<!--        </button>-->
-<!--    </form>-->
-<!--</div>-->
-
-<!--&lt;!&ndash; JAVASCRIPT &ndash;&gt;-->
-<!--<script>-->
-<!--    function openSharePopup(fileId) {-->
-<!--        document.getElementById("sharePopup").style.display = "block";-->
-<!--        document.getElementById("shareForm").action = "/share/" + fileId;-->
-<!--    }-->
-
-<!--    function closeSharePopup() {-->
-<!--        document.getElementById("sharePopup").style.display = "none";-->
-<!--    }-->
-<!--</script>-->
-
-<!--</body>-->
-<!--</html>-->
-
-
-
-
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--    <title>Dashboard - SecureShare</title>-->
-<!--    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">-->
-<!--    <style>-->
-<!--        :root {-->
-<!--            &#45;&#45;primary-color: #1a73e8; /* Blue */-->
-<!--            &#45;&#45;primary-dark: #155bb3;-->
-<!--            &#45;&#45;background-light: #f5f7fa;-->
-<!--            &#45;&#45;card-background: #ffffff;-->
-<!--            &#45;&#45;text-color: #3c4043;-->
-<!--            &#45;&#45;danger-color: #d93025; /* Red */-->
-<!--            &#45;&#45;border-color: #e0e0e0;-->
-<!--        }-->
-
-<!--        * {-->
-<!--            margin: 0;-->
-<!--            padding: 0;-->
-<!--            box-sizing: border-box;-->
-<!--        }-->
-
-<!--        body {-->
-<!--            font-family: 'Inter', Arial, sans-serif;-->
-<!--            background-color: var(&#45;&#45;background-light);-->
-<!--            color: var(&#45;&#45;text-color);-->
-<!--            line-height: 1.6;-->
-<!--            min-height: 100vh;-->
-<!--            display: flex;-->
-<!--            flex-direction: column;-->
-<!--        }-->
-
-<!--        /* -&#45;&#45; Header Styling -&#45;&#45; */-->
-<!--        .app-header {-->
-<!--            background-color: var(&#45;&#45;card-background);-->
-<!--            border-bottom: 1px solid var(&#45;&#45;border-color);-->
-<!--            padding: 15px 40px;-->
-<!--            display: flex;-->
-<!--            justify-content: space-between;-->
-<!--            align-items: center;-->
-<!--            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);-->
-<!--        }-->
-
-<!--        .project-title {-->
-<!--            color: var(&#45;&#45;primary-color);-->
-<!--            font-size: 24px;-->
-<!--            font-weight: 700;-->
-<!--            text-decoration: none;-->
-<!--        }-->
-
-<!--        .logout-btn {-->
-<!--            background-color: var(&#45;&#45;danger-color);-->
-<!--            color: white;-->
-<!--            padding: 8px 16px;-->
-<!--            border-radius: 6px;-->
-<!--            text-decoration: none;-->
-<!--            font-size: 14px;-->
-<!--            font-weight: 500;-->
-<!--            transition: background-color 0.3s;-->
-<!--        }-->
-
-<!--        .logout-btn:hover {-->
-<!--            background-color: #b71c1c;-->
-<!--        }-->
-
-<!--        /* -&#45;&#45; Main Content Area -&#45;&#45; */-->
-<!--        .main-content {-->
-<!--            flex-grow: 1;-->
-<!--            padding: 30px 20px;-->
-<!--            max-width: 1200px;-->
-<!--            width: 100%;-->
-<!--            margin: 0 auto;-->
-<!--        }-->
-
-<!--        h2 {-->
-<!--            color: var(&#45;&#45;text-color);-->
-<!--            margin-bottom: 5px;-->
-<!--            font-weight: 600;-->
-<!--            font-size: 28px;-->
-<!--        }-->
-
-<!--        .welcome-tagline {-->
-<!--            color: #70757a;-->
-<!--            font-size: 16px;-->
-<!--            margin-bottom: 30px;-->
-<!--            font-weight: 400;-->
-<!--        }-->
-
-<!--        /* -&#45;&#45; Single Stat Card -&#45;&#45; */-->
-<!--        .single-stat-card {-->
-<!--            background: var(&#45;&#45;card-background);-->
-<!--            padding: 30px;-->
-<!--            border-radius: 10px;-->
-<!--            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);-->
-<!--            border-left: 5px solid var(&#45;&#45;primary-color);-->
-<!--            margin-bottom: 40px;-->
-<!--            max-width: 350px;-->
-<!--        }-->
-
-<!--        .single-stat-card h4 {-->
-<!--            font-size: 15px;-->
-<!--            color: #70757a;-->
-<!--            margin-bottom: 10px;-->
-<!--            font-weight: 600;-->
-<!--        }-->
-
-<!--        .single-stat-card p {-->
-<!--            font-size: 40px;-->
-<!--            font-weight: 700;-->
-<!--            color: var(&#45;&#45;primary-color);-->
-<!--        }-->
-
-<!--        /* -&#45;&#45; File List Header -&#45;&#45; */-->
-<!--        .file-list-header {-->
-<!--            font-size: 22px;-->
-<!--            font-weight: 600;-->
-<!--            margin: 0 0 20px 0;-->
-<!--            color: var(&#45;&#45;text-color);-->
-<!--        }-->
-
-<!--        /* -&#45;&#45; Table Styling -&#45;&#45; */-->
-<!--        table {-->
-<!--            width: 100%;-->
-<!--            border-collapse: separate;-->
-<!--            border-spacing: 0;-->
-<!--            background: var(&#45;&#45;card-background);-->
-<!--            border-radius: 10px;-->
-<!--            overflow: hidden;-->
-<!--            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);-->
-<!--            margin-bottom: 30px;-->
-<!--        }-->
-
-<!--        th {-->
-<!--            background-color: var(&#45;&#45;primary-color);-->
-<!--            color: white;-->
-<!--            padding: 15px 20px;-->
-<!--            text-align: left;-->
-<!--            font-weight: 600;-->
-<!--            font-size: 15px;-->
-<!--        }-->
-<!--        td {-->
-<!--            padding: 15px 20px;-->
-<!--            border-bottom: 1px solid var(&#45;&#45;border-color);-->
-<!--            font-size: 14px;-->
-<!--        }-->
-<!--        tr:last-child td { border-bottom: none; }-->
-<!--        tr:hover { background-color: #f7f7f7; }-->
-
-<!--        /* Action Links Alignment and Styling */-->
-<!--        .action-links {-->
-<!--            white-space: nowrap;-->
-<!--        }-->
-
-<!--        .action-links a {-->
-<!--            font-size: 14px;-->
-<!--            margin-right: 20px;-->
-<!--            text-decoration: none;-->
-<!--            color: var(&#45;&#45;primary-color); /* Default color for links (Download) */-->
-<!--            font-weight: 500;-->
-<!--            display: inline-block;-->
-<!--        }-->
-
-<!--        /* CORRECTED: Specific styling for Delete link to be red, using !important to guarantee priority */-->
-<!--        .delete-link {-->
-<!--            color: var(&#45;&#45;danger-color) !important; /* Enforcing red color with high priority */-->
-<!--            margin-right: 0;-->
-<!--        }-->
-
-<!--        .action-links a:hover { text-decoration: underline; }-->
-
-<!--        /* -&#45;&#45; Upload Section -&#45;&#45; */-->
-<!--        .upload-section {-->
-<!--            background: var(&#45;&#45;card-background);-->
-<!--            padding: 30px;-->
-<!--            border-radius: 10px;-->
-<!--            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);-->
-<!--        }-->
-<!--        .upload-section h3 {-->
-<!--            font-size: 20px;-->
-<!--            margin-bottom: 20px;-->
-<!--            color: var(&#45;&#45;text-color);-->
-<!--            font-weight: 600;-->
-<!--        }-->
-<!--        .upload-form {-->
-<!--            display: flex;-->
-<!--            gap: 15px;-->
-<!--            align-items: center;-->
-<!--        }-->
-<!--        input[type="file"] {-->
-<!--            padding: 10px;-->
-<!--            border: 1px solid var(&#45;&#45;border-color);-->
-<!--            border-radius: 6px;-->
-<!--            flex-grow: 1;-->
-<!--        }-->
-<!--        .btn-primary {-->
-<!--            padding: 10px 20px;-->
-<!--            font-size: 15px;-->
-<!--        }-->
-<!--        .empty-state { text-align: center; padding: 40px; color: #70757a; font-style: italic; }-->
-
-<!--        /* -&#45;&#45; Footer Styling -&#45;&#45; */-->
-<!--        .app-footer {-->
-<!--            margin-top: auto;-->
-<!--            background-color: #e9ecef;-->
-<!--            color: #6c757d;-->
-<!--            padding: 15px 40px;-->
-<!--            text-align: center;-->
-<!--            font-size: 13px;-->
-<!--            border-top: 1px solid var(&#45;&#45;border-color);-->
-<!--        }-->
-<!--        .app-footer a {-->
-<!--            color: #6c757d;-->
-<!--            text-decoration: none;-->
-<!--            margin: 0 10px;-->
-<!--        }-->
-<!--        .app-footer a:hover {-->
-<!--            text-decoration: underline;-->
-<!--        }-->
-
-<!--        @media (max-width: 768px) {-->
-<!--            .app-header { padding: 15px 20px; }-->
-<!--            .main-content { padding: 20px 10px; }-->
-<!--            .single-stat-card { max-width: 100%; }-->
-<!--            .upload-form { flex-direction: column; align-items: stretch; }-->
-<!--        }-->
-<!--    </style>-->
-<!--</head>-->
-<!--<body>-->
-<!--<header class="app-header">-->
-<!--    <a href="/" class="project-title">Secure Share</a>-->
-<!--    <a href="/logout" class="logout-btn">Logout</a>-->
-<!--</header>-->
-
-<!--<div class="main-content">-->
-<!--    <h2>Welcome Back, <span th:text="${username}">User</span>!</h2>-->
-<!--    <div class="welcome-tagline">Share your files securely.</div>-->
-
-<!--    <div class="single-stat-card">-->
-<!--        <h4>TOTAL FILES UPLOADED</h4>-->
-<!--        <p><span th:text="${files.size()}">0</span></p>-->
-<!--    </div>-->
-
-<!--    <h3 class="file-list-header">Your Files</h3>-->
-
-<!--    <table>-->
-<!--        <thead>-->
-<!--        <tr>-->
-<!--            <th>File Name</th>-->
-<!--            <th>Type</th>-->
-<!--            <th>Size (Bytes)</th>-->
-<!--            <th>Action</th>-->
-<!--        </tr>-->
-<!--        </thead>-->
-<!--        <tbody>-->
-<!--        <tr th:if="${files.size() == 0}">-->
-<!--            <td colspan="4" class="empty-state">No files uploaded yet. Upload your first file below.</td>-->
-<!--        </tr>-->
-
-<!--        <tr th:each="file : ${files}">-->
-<!--            <td th:text="${file.fileName}">document.pdf</td>-->
-<!--            <td th:text="${file.fileType}">application/pdf</td>-->
-<!--            <td th:text="${file.fileSize}">1234567</td>-->
-<!--            <td class="action-links">-->
-<!--                <a th:href="@{'/download/' + ${file.id}}" title="Download">Download</a>-->
-<!--                <a th:href="@{'/delete/' + ${file.id}}" class="delete-link" title="Delete">Delete</a>-->
-<!--            </td>-->
-<!--        </tr>-->
-<!--        </tbody>-->
-<!--    </table>-->
-
-<!--    <div class="upload-section">-->
-<!--        <h3>Upload a New File</h3>-->
-<!--        <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">-->
-<!--            <input type="file" name="file" required>-->
-<!--            <button type="submit" class="btn btn-primary">Upload File</button>-->
-<!--        </form>-->
-<!--    </div>-->
-<!--</div>-->
-
-<!--<footer class="app-footer">-->
-<!--    &copy; 2025 Secure Share. All rights reserved.-->
-<!--    <a href="#">Privacy Policy</a> |-->
-<!--    <a href="#">Terms of Service</a>-->
-<!--</footer>-->
-<!--</body>-->
-<!--</html>-->
-
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Dashboard - SecureShare</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --primary-color: #1a73e8; /* Blue */
+            --primary-color: #1a73e8;
             --primary-dark: #155bb3;
             --background-light: #f5f7fa;
             --card-background: #ffffff;
             --text-color: #3c4043;
-            --danger-color: #d93025; /* Red */
+            --danger-color: #d93025;
             --border-color: #e0e0e0;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', Arial, sans-serif;
@@ -524,7 +27,7 @@
             flex-direction: column;
         }
 
-        /* --- Header Styling --- */
+        /* Header */
         .app-header {
             background-color: var(--card-background);
             border-bottom: 1px solid var(--border-color);
@@ -548,16 +51,8 @@
             padding: 8px 16px;
             border-radius: 6px;
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.3s;
         }
 
-        .logout-btn:hover {
-            background-color: #b71c1c;
-        }
-
-        /* --- Main Content Area --- */
         .main-content {
             flex-grow: 1;
             padding: 30px 20px;
@@ -566,26 +61,14 @@
             margin: 0 auto;
         }
 
-        h2 {
-            color: var(--text-color);
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 28px;
-        }
+        h2 { font-size: 28px; font-weight: 600; margin-bottom: 10px; }
 
-        .welcome-tagline {
-            color: #70757a;
-            font-size: 16px;
-            margin-bottom: 30px;
-            font-weight: 400;
-        }
-
-        /* --- Stat Cards Container (For 2 cards) --- */
+        /* Stats */
         .stats-grid {
-            display: flex; /* Use flex for easy horizontal layout */
+            display: flex;
             gap: 20px;
-            margin-bottom: 40px;
             flex-wrap: wrap;
+            margin-bottom: 40px;
         }
 
         .stat-card {
@@ -594,162 +77,113 @@
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
             border-left: 5px solid var(--primary-color);
-            max-width: 350px;
-            flex: 1; /* Allow cards to grow equally */
+            flex: 1;
+            min-width: 250px;
         }
 
-        .stat-card h4 {
-            font-size: 15px;
-            color: #70757a;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
+        .stat-card h4 { color: #70757a; margin-bottom: 10px; }
+        .stat-card p { font-size: 35px; color: var(--primary-color); }
 
-        .stat-card p {
-            font-size: 40px;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        /* --- File List Header --- */
-        .file-list-header {
-            font-size: 22px;
-            font-weight: 600;
-            margin: 0 0 20px 0;
-            color: var(--text-color);
-        }
-
-        /* --- Table Styling --- */
+        /* Table */
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
             background: var(--card-background);
             border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             margin-bottom: 30px;
+            border-collapse: collapse;
         }
 
         th {
             background-color: var(--primary-color);
             color: white;
-            padding: 15px 20px;
+            padding: 15px;
             text-align: left;
-            font-weight: 600;
-            font-size: 15px;
         }
+
         td {
-            padding: 15px 20px;
+            padding: 15px;
             border-bottom: 1px solid var(--border-color);
-            font-size: 14px;
         }
-        tr:last-child td { border-bottom: none; }
+
         tr:hover { background-color: #f7f7f7; }
 
-        /* Action Links Alignment and Styling */
-        .action-links {
-            white-space: nowrap;
-        }
-
         .action-links a {
-            font-size: 14px;
-            margin-right: 20px;
+            margin-right: 15px;
             text-decoration: none;
             color: var(--primary-color);
             font-weight: 500;
-            display: inline-block;
         }
 
-        /* Specific styling for Delete link (Red) */
-        .delete-link {
-            color: var(--danger-color) !important;
-            margin-right: 0;
-        }
+        .delete-link { color: var(--danger-color) !important; }
 
-        .action-links a:hover { text-decoration: underline; }
-
-        /* --- Upload Section --- */
+        /* Upload Area */
         .upload-section {
             background: var(--card-background);
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .upload-section h3 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            color: var(--text-color);
-            font-weight: 600;
+
+        /* Share Popup */
+        #sharePopup {
+            display: none;
+            position: fixed;
+            left: 50%; top: 50%;
+            transform: translate(-50%,-50%);
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            width: 300px;
+            z-index: 9999;
         }
-        .upload-form {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        input[type="file"] {
+
+        #sharePopup input {
+            width: 100%;
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            flex-grow: 1;
-        }
-        .btn-primary {
-            padding: 10px 20px;
-            font-size: 15px;
-        }
-        .empty-state { text-align: center; padding: 40px; color: #70757a; font-style: italic; }
-
-        /* --- Footer Styling --- */
-        .app-footer {
-            margin-top: auto;
-            background-color: #e9ecef;
-            color: #6c757d;
-            padding: 15px 40px;
-            text-align: center;
-            font-size: 13px;
-            border-top: 1px solid var(--border-color);
-        }
-        .app-footer a {
-            color: #6c757d;
-            text-decoration: none;
-            margin: 0 10px;
-        }
-        .app-footer a:hover {
-            text-decoration: underline;
+            margin-top: 8px;
         }
 
-        @media (max-width: 768px) {
-            .app-header { padding: 15px 20px; }
-            .main-content { padding: 20px 10px; }
-            .stats-grid { flex-direction: column; }
-            .stat-card { max-width: 100%; }
-            .upload-form { flex-direction: column; align-items: stretch; }
+        #popupOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 9998;
         }
+
     </style>
 </head>
+
 <body>
+
 <header class="app-header">
     <a href="/" class="project-title">Secure Share</a>
     <a href="/logout" class="logout-btn">Logout</a>
 </header>
 
 <div class="main-content">
-    <h2>Welcome Back, <span th:text="${username}">User</span>!</h2>
-    <div class="welcome-tagline">Share your files securely.</div>
+
+    <h2>Welcome Back, <span th:text="${username}"></span>!</h2>
 
     <div class="stats-grid">
         <div class="stat-card">
-            <h4>TOTAL FILES UPLOADED</h4>
-            <p><span th:text="${files.size()}">0</span></p>
+            <h4>TOTAL FILES</h4>
+            <p th:text="${files.size()}">0</p>
         </div>
 
         <div class="stat-card">
             <h4>TOTAL STORAGE</h4>
-            <p><span th:text="${totalStorageFormattedMB}">0 MB</span></p>
+            <p th:text="${totalStorageFormattedMB}">0 MB</p>
         </div>
     </div>
 
-    <h3 class="file-list-header">Your Files</h3>
+    <!-- File List -->
+    <h3>Your Files</h3>
 
     <table>
         <thead>
@@ -760,36 +194,72 @@
             <th>Action</th>
         </tr>
         </thead>
+
         <tbody>
         <tr th:if="${files.size() == 0}">
-            <td colspan="4" class="empty-state">No files uploaded yet. Upload your first file below.</td>
+            <td colspan="4" style="text-align:center;">No files uploaded.</td>
         </tr>
 
         <tr th:each="file : ${files}">
-            <td th:text="${file.fileName}">document.pdf</td>
-            <td th:text="${file.fileType}">application/pdf</td>
-            <td th:text="${file.fileSizeMB}">0.5 MB</td>
+            <td th:text="${file.fileName}"></td>
+            <td th:text="${file.fileType}"></td>
+            <td th:text="${file.fileSizeMB}"></td>
+
             <td class="action-links">
-                <a th:href="@{'/download/' + ${file.id}}" title="Download">Download</a>
-                <a th:href="@{'/delete/' + ${file.id}}" class="delete-link" title="Delete">Delete</a>
+                <a href="#" th:onclick="'openSharePopup(' + ${file.id} + '); return false;'">Share</a>
+                <a th:href="@{'/download/' + ${file.id}}">Download</a>
+                <a th:href="@{'/delete/' + ${file.id}}" class="delete-link">Delete</a>
             </td>
         </tr>
         </tbody>
     </table>
 
+    <!-- Upload Section -->
     <div class="upload-section">
-        <h3>Upload a New File</h3>
-        <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+        <h3>Upload File</h3>
+        <form action="/upload" method="post" enctype="multipart/form-data">
             <input type="file" name="file" required>
-            <button type="submit" class="btn btn-primary">Upload File</button>
+            <button type="submit" class="btn-primary">Upload</button>
         </form>
     </div>
+
 </div>
+
+<!-- Background Overlay -->
+<div id="popupOverlay" onclick="closeSharePopup()"></div>
+
+<!-- Share Popup -->
+<div id="sharePopup">
+    <h3 style="text-align:center; margin-bottom:10px;">Share File</h3>
+
+    <form id="shareForm" method="post">
+        <label>Enter Username:</label>
+        <input type="text" name="targetUser" required>
+
+        <br><br>
+
+        <button class="btn-primary" style="width:100%;">Share</button>
+        <button type="button" style="margin-top:10px;width:100%;padding:10px;background:#ccc;border:none;border-radius:6px;"
+                onclick="closeSharePopup()">Cancel</button>
+    </form>
+</div>
+
+<script>
+    function openSharePopup(fileId) {
+        document.getElementById("popupOverlay").style.display = "block";
+        document.getElementById("sharePopup").style.display = "block";
+        document.getElementById("shareForm").action = "/share/" + fileId;
+    }
+
+    function closeSharePopup() {
+        document.getElementById("popupOverlay").style.display = "none";
+        document.getElementById("sharePopup").style.display = "none";
+    }
+</script>
 
 <footer class="app-footer">
     &copy; 2025 Secure Share. All rights reserved.
-    <a href="#">Privacy Policy</a> |
-    <a href="#">Terms of Service</a>
 </footer>
+
 </body>
 </html>

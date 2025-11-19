@@ -1,4 +1,4 @@
-package com.secureshare.config;
+package com.secureshare.TechBySaad.config;
 
 import org.springframework.context.annotation.Configuration;
 

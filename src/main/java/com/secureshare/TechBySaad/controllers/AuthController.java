@@ -1,7 +1,7 @@
-package com.secureshare.controllers;
+package com.secureshare.TechBySaad.controllers;
 
-import com.secureshare.models.User;
-import com.secureshare.services.UserService;
+import com.secureshare.TechBySaad.models.User;
+import com.secureshare.TechBySaad.services.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;

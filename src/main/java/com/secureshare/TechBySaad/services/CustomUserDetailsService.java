@@ -1,7 +1,7 @@
-package com.secureshare.services;
+package com.secureshare.TechBySaad.services;
 
-import com.secureshare.models.User;
-import com.secureshare.repositories.UserRepository;
+import com.secureshare.TechBySaad.models.User;
+import com.secureshare.TechBySaad.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;

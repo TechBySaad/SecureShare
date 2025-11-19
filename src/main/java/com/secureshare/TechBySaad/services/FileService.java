@@ -1,8 +1,8 @@
-package com.secureshare.services;
+package com.secureshare.TechBySaad.services;
 
-import com.secureshare.models.FileEntity;
-import com.secureshare.repositories.FileRepository;
-import com.secureshare.security.AESUtil;
+import com.secureshare.TechBySaad.models.FileEntity;
+import com.secureshare.TechBySaad.repositories.FileRepository;
+import com.secureshare.TechBySaad.security.AESUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

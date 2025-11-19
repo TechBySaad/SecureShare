@@ -1,9 +1,7 @@
-package com.secureshare;
+package com.secureshare.TechBySaad;
 
-import com.mysql.cj.x.protobuf.MysqlxSession;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.jdbc.core.PreparedStatementSetter;
 
 @SpringBootApplication
 public class SecureShareApplication {

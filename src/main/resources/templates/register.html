@@ -1,40 +1,40 @@
-<!--&lt;!&ndash;<!DOCTYPE html>&ndash;&gt;-->
-<!--&lt;!&ndash;<html xmlns:th="http://www.thymeleaf.org">&ndash;&gt;-->
-<!--&lt;!&ndash;<head>&ndash;&gt;-->
-<!--&lt;!&ndash;    <title>Register</title>&ndash;&gt;-->
-<!--&lt;!&ndash;</head>&ndash;&gt;-->
-<!--&lt;!&ndash;<body>&ndash;&gt;-->
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <title>Register</title>-->
+<!--</head>-->
+<!--<body>-->
 
-<!--&lt;!&ndash;<h2>Create Account</h2>&ndash;&gt;-->
+<!--<h2>Create Account</h2>-->
 
-<!--&lt;!&ndash;<p th:text="${error}" style="color:red"></p>&ndash;&gt;-->
-<!--&lt;!&ndash;<p th:text="${success}" style="color:green"></p>&ndash;&gt;-->
+<!--<p th:text="${error}" style="color:red"></p>-->
+<!--<p th:text="${success}" style="color:green"></p>-->
 
-<!--&lt;!&ndash;<form th:action="@{/register}" th:object="${user}" method="post">&ndash;&gt;-->
+<!--<form th:action="@{/register}" th:object="${user}" method="post">-->
 
-<!--&lt;!&ndash;    <label>Username:</label>&ndash;&gt;-->
-<!--&lt;!&ndash;    <input type="text" th:field="*{username}" required><br><br>&ndash;&gt;-->
+<!--    <label>Username:</label>-->
+<!--    <input type="text" th:field="*{username}" required><br><br>-->
 
-<!--&lt;!&ndash;    <label>Email:</label>&ndash;&gt;-->
-<!--&lt;!&ndash;    <input type="email" th:field="*{email}" required><br><br>&ndash;&gt;-->
+<!--    <label>Email:</label>-->
+<!--    <input type="email" th:field="*{email}" required><br><br>-->
 
-<!--&lt;!&ndash;    <label>Password:</label>&ndash;&gt;-->
-<!--&lt;!&ndash;    <input type="password" th:field="*{password}" required><br><br>&ndash;&gt;-->
+<!--    <label>Password:</label>-->
+<!--    <input type="password" th:field="*{password}" required><br><br>-->
 
-<!--&lt;!&ndash;    <button type="submit">Register</button>&ndash;&gt;-->
+<!--    <button type="submit">Register</button>-->
 
-<!--&lt;!&ndash;</form>&ndash;&gt;-->
+<!--</form>-->
 
-<!--&lt;!&ndash;<a href="/login">Back to Login</a>&ndash;&gt;-->
+<!--<a href="/login">Back to Login</a>-->
 
-<!--&lt;!&ndash;</body>&ndash;&gt;-->
-<!--&lt;!&ndash;</html>&ndash;&gt;-->
-
-
+<!--</body>-->
+<!--</html>-->
 
 
 
-<!--&lt;!&ndash;WITH ADDED CSS&ndash;&gt;-->
+
+
+<!--WITH ADDED CSS-->
 
 <!--<!DOCTYPE html>-->
 <!--<html xmlns:th="http://www.thymeleaf.org">-->
@@ -228,18 +228,239 @@
 <!--</html>-->
 
 
+
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+<!--<head>-->
+<!--    <title>Register - SecureShare</title>-->
+<!--    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">-->
+<!--    <style>-->
+<!--        /* Your existing CSS here - keep it exactly the same */-->
+<!--        :root {-->
+<!--            &#45;&#45;primary-color: #1a73e8;-->
+<!--            &#45;&#45;primary-dark: #155bb3;-->
+<!--            &#45;&#45;background-light: #f5f7fa;-->
+<!--            &#45;&#45;card-background: #ffffff;-->
+<!--            &#45;&#45;text-color: #3c4043;-->
+<!--            &#45;&#45;border-color: #e0e0e0;-->
+<!--            &#45;&#45;success-bg: #e6f4ea;-->
+<!--            &#45;&#45;success-text: #137333;-->
+<!--            &#45;&#45;error-bg: #fce8e6;-->
+<!--            &#45;&#45;error-text: #c5221f;-->
+<!--        }-->
+
+<!--        * {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            box-sizing: border-box;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            font-family: 'Inter', Arial, sans-serif;-->
+<!--            background-color: var(&#45;&#45;background-light);-->
+<!--            color: var(&#45;&#45;text-color);-->
+<!--            line-height: 1.6;-->
+<!--            min-height: 100vh;-->
+<!--            display: flex;-->
+<!--            flex-direction: column;-->
+<!--        }-->
+
+<!--        /* Rest of your CSS remains exactly the same */-->
+<!--        .app-header {-->
+<!--            background-color: var(&#45;&#45;card-background);-->
+<!--            border-bottom: 1px solid var(&#45;&#45;border-color);-->
+<!--            padding: 15px 40px;-->
+<!--            display: flex;-->
+<!--            justify-content: center;-->
+<!--            align-items: center;-->
+<!--            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);-->
+<!--        }-->
+
+<!--        .project-title {-->
+<!--            color: var(&#45;&#45;primary-color);-->
+<!--            font-size: 24px;-->
+<!--            font-weight: 700;-->
+<!--            text-decoration: none;-->
+<!--        }-->
+
+<!--        .main-content {-->
+<!--            flex-grow: 1;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            padding: 20px;-->
+<!--        }-->
+
+<!--        .container {-->
+<!--            background: var(&#45;&#45;card-background);-->
+<!--            padding: 40px 30px;-->
+<!--            border-radius: 12px;-->
+<!--            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);-->
+<!--            width: 100%;-->
+<!--            max-width: 420px;-->
+<!--            text-align: center;-->
+<!--        }-->
+
+<!--        .container h2 {-->
+<!--            color: var(&#45;&#45;text-color);-->
+<!--            margin-bottom: 20px;-->
+<!--            font-size: 24px;-->
+<!--            font-weight: 600;-->
+<!--        }-->
+
+<!--        .tagline {-->
+<!--            color: #70757a;-->
+<!--            font-size: 14px;-->
+<!--            margin-bottom: 25px;-->
+<!--            font-weight: 500;-->
+<!--        }-->
+
+<!--        .message {-->
+<!--            padding: 12px;-->
+<!--            border-radius: 6px;-->
+<!--            margin-bottom: 20px;-->
+<!--            font-weight: 500;-->
+<!--            text-align: left;-->
+<!--            font-size: 14px;-->
+<!--        }-->
+
+<!--        .error { background-color: var(&#45;&#45;error-bg); color: var(&#45;&#45;error-text); border: 1px solid #f1c3c1; }-->
+<!--        .success { background-color: var(&#45;&#45;success-bg); color: var(&#45;&#45;success-text); border: 1px solid #94d0a3; }-->
+
+<!--        form { display: flex; flex-direction: column; text-align: left; }-->
+
+<!--        label {-->
+<!--            margin-bottom: 5px;-->
+<!--            font-weight: 500;-->
+<!--            color: var(&#45;&#45;text-color);-->
+<!--            font-size: 14px;-->
+<!--        }-->
+
+<!--        input[type="text"], input[type="email"], input[type="password"] {-->
+<!--            padding: 12px;-->
+<!--            margin-bottom: 20px;-->
+<!--            border: 1px solid var(&#45;&#45;border-color);-->
+<!--            border-radius: 6px;-->
+<!--            font-size: 16px;-->
+<!--            transition: border-color 0.3s, box-shadow 0.3s;-->
+<!--            background-color: #fcfcfc;-->
+<!--        }-->
+
+<!--        input:focus {-->
+<!--            outline: none;-->
+<!--            border-color: var(&#45;&#45;primary-color);-->
+<!--            box-shadow: 0 0 0 1px var(&#45;&#45;primary-color);-->
+<!--            background-color: var(&#45;&#45;card-background);-->
+<!--        }-->
+
+<!--        button {-->
+<!--            background-color: var(&#45;&#45;primary-color);-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            padding: 14px;-->
+<!--            border-radius: 6px;-->
+<!--            font-size: 16px;-->
+<!--            font-weight: 600;-->
+<!--            cursor: pointer;-->
+<!--            transition: background-color 0.3s, box-shadow 0.3s;-->
+<!--            margin-bottom: 25px;-->
+<!--        }-->
+
+<!--        button:hover {-->
+<!--            background-color: var(&#45;&#45;primary-dark);-->
+<!--            box-shadow: 0 2px 5px rgba(26, 115, 232, 0.3);-->
+<!--        }-->
+
+<!--        .login-link {-->
+<!--            color: var(&#45;&#45;primary-color);-->
+<!--            text-decoration: none;-->
+<!--            text-align: center;-->
+<!--            display: block;-->
+<!--            font-weight: 500;-->
+<!--            font-size: 15px;-->
+<!--        }-->
+
+<!--        .login-link:hover {-->
+<!--            text-decoration: underline;-->
+<!--            color: var(&#45;&#45;primary-dark);-->
+<!--        }-->
+
+<!--        .app-footer {-->
+<!--            margin-top: auto;-->
+<!--            background-color: #e9ecef;-->
+<!--            color: #6c757d;-->
+<!--            padding: 15px 40px;-->
+<!--            text-align: center;-->
+<!--            font-size: 13px;-->
+<!--            border-top: 1px solid var(&#45;&#45;border-color);-->
+<!--        }-->
+
+<!--        .app-footer a {-->
+<!--            color: #6c757d;-->
+<!--            text-decoration: none;-->
+<!--            margin: 0 10px;-->
+<!--        }-->
+
+<!--        .app-footer a:hover {-->
+<!--            text-decoration: underline;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<header class="app-header">-->
+<!--    <a href="/" class="project-title">Secure Share</a>-->
+<!--</header>-->
+
+<!--<div class="main-content">-->
+<!--    <div class="container">-->
+<!--        <h2>Create Account</h2>-->
+<!--        <div class="tagline">Share your files securely.</div>-->
+
+<!--        &lt;!&ndash; Remove Thymeleaf attributes for testing &ndash;&gt;-->
+<!--        <form action="/register" method="post">-->
+<!--            <label for="username">Username</label>-->
+<!--            <input type="text" id="username" name="username"-->
+<!--                   placeholder="Choose a unique username"-->
+<!--                   required aria-required="true" aria-label="Username">-->
+
+<!--            <label for="email">Email Address</label>-->
+<!--            <input type="email" id="email" name="email"-->
+<!--                   placeholder="your.email@example.com"-->
+<!--                   required aria-required="true" aria-label="Email Address">-->
+
+<!--            <label for="password">Password</label>-->
+<!--            <input type="password" id="password" name="password"-->
+<!--                   placeholder="Must be at least 8 characters"-->
+<!--                   required aria-required="true" aria-label="Password">-->
+
+<!--            <button type="submit">Create My Account</button>-->
+<!--        </form>-->
+
+<!--        <a href="/login" class="login-link">Already have an account? Log In</a>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--<footer class="app-footer">-->
+<!--    &copy; 2025 Secure Share. All rights reserved.-->
+<!--    <a href="#">Privacy Policy</a> |-->
+<!--    <a href="#">Terms of Service</a>-->
+<!--</footer>-->
+<!--</body>-->
+<!--</html>-->
+
+
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
     <title>Register - SecureShare</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1a73e8;
+            --primary-color: #1a73e8; /* Google Blue */
             --primary-dark: #155bb3;
             --background-light: #f5f7fa;
             --card-background: #ffffff;
-            --text-color: #3c4043;
+            --text-color: #3c4043; /* Darker text for readability */
             --border-color: #e0e0e0;
             --success-bg: #e6f4ea;
             --success-text: #137333;
@@ -247,6 +468,7 @@
             --error-text: #c5221f;
         }
 
+        /* --- Base Reset --- */
         * {
             margin: 0;
             padding: 0;
@@ -261,9 +483,10 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            font-size: 16px; /* Ensure base font size is modern */
         }
 
-        /* --- Header Styling (Shared) --- */
+        /* --- Header Styling --- */
         .app-header {
             background-color: var(--card-background);
             border-bottom: 1px solid var(--border-color);
@@ -273,14 +496,15 @@
             align-items: center;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
+
         .project-title {
             color: var(--primary-color);
-            font-size: 24px;
+            font-size: 26px; /* Slightly larger title */
             font-weight: 700;
             text-decoration: none;
         }
 
-        /* --- Main Content Area (Centralized) --- */
+        /* --- Main Content Area --- */
         .main-content {
             flex-grow: 1;
             display: flex;
@@ -291,33 +515,33 @@
 
         .container {
             background: var(--card-background);
-            padding: 40px 30px;
+            padding: 40px 35px; /* Slightly more horizontal padding */
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Stronger, softer shadow for depth */
             width: 100%;
-            max-width: 420px;
+            max-width: 440px; /* Slightly wider container */
             text-align: center;
         }
 
         .container h2 {
             color: var(--text-color);
-            margin-bottom: 25px;
-            font-size: 24px;
-            font-weight: 600;
+            margin-bottom: 15px; /* Reduced margin */
+            font-size: 26px; /* Larger heading */
+            font-weight: 700;
         }
 
         .tagline {
             color: #70757a;
-            font-size: 14px;
-            margin-bottom: 30px;
-            font-weight: 500;
+            font-size: 15px;
+            margin-bottom: 30px; /* Separator space */
+            font-weight: 400;
         }
 
         /* --- Message Styles --- */
         .message {
             padding: 12px;
             border-radius: 6px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-weight: 500;
             text-align: left;
             font-size: 14px;
@@ -327,29 +551,66 @@
 
         /* --- Form Elements --- */
         form { display: flex; flex-direction: column; text-align: left; }
-        label { margin-bottom: 8px; font-weight: 500; color: var(--text-color); font-size: 14px; }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: 600; /* Bolder label text */
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
         input[type="text"], input[type="email"], input[type="password"] {
-            padding: 14px; margin-bottom: 25px; border: 1px solid var(--border-color);
-            border-radius: 6px; font-size: 16px; transition: border-color 0.3s, box-shadow 0.3s;
+            padding: 14px; /* Back to 14px for a comfortable height */
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
             background-color: #fcfcfc;
         }
-        input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); background-color: var(--card-background); }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.4); /* Stronger focus ring */
+            background-color: var(--card-background);
+        }
 
         /* --- Button & Link --- */
         button {
-            background-color: var(--primary-color); color: white; border: none; padding: 14px;
-            border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;
-            transition: background-color 0.3s, box-shadow 0.3s; margin-bottom: 30px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            margin-bottom: 30px; /* Standardized space before link */
+            letter-spacing: 0.5px;
         }
-        button:hover { background-color: var(--primary-dark); box-shadow: 0 2px 5px rgba(26, 115, 232, 0.3); }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            box-shadow: 0 4px 10px rgba(26, 115, 232, 0.4); /* Better button shadow */
+        }
 
         .login-link {
-            color: var(--primary-color); text-decoration: none; text-align: center;
-            display: block; font-weight: 500; font-size: 15px;
+            color: var(--primary-color);
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            font-weight: 500;
+            font-size: 15px;
         }
-        .login-link:hover { text-decoration: underline; color: var(--primary-dark); }
 
-        /* --- Footer Styling (Shared) --- */
+        .login-link:hover {
+            text-decoration: underline;
+            color: var(--primary-dark);
+        }
+
+        /* --- Footer Styling --- */
         .app-footer {
             margin-top: auto;
             background-color: #e9ecef;
@@ -359,8 +620,16 @@
             font-size: 13px;
             border-top: 1px solid var(--border-color);
         }
-        .app-footer a { color: #6c757d; text-decoration: none; margin: 0 10px; }
-        .app-footer a:hover { text-decoration: underline; }
+
+        .app-footer a {
+            color: #6c757d;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .app-footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -373,18 +642,24 @@
         <h2>Create Account</h2>
         <div class="tagline">Share your files securely.</div>
 
-        <p th:if="${error}" class="message error">⚠️ <span th:text="${error}"></span></p>
-        <p th:if="${success}" class="message success">✅ <span th:text="${success}"></span></p>
+        <p th:if="${error}" class="message error"><span th:text="${error}">An error occurred during registration.</span></p>
+        <p th:if="${success}" class="message success"><span th:text="${success}">Registration successful! You can now log in.</span></p>
 
-        <form th:action="@{/register}" th:object="${user}" method="post">
+        <form action="/register" method="post">
             <label for="username">Username</label>
-            <input type="text" id="username" th:field="*{username}" placeholder="Choose a unique username" required>
+            <input type="text" id="username" name="username"
+                   placeholder="Choose a unique username"
+                   required aria-required="true" aria-label="Username">
 
             <label for="email">Email Address</label>
-            <input type="email" id="email" th:field="*{email}" placeholder="your.email@example.com" required>
+            <input type="email" id="email" name="email"
+                   placeholder="your.email@example.com"
+                   required aria-required="true" aria-label="Email Address">
 
             <label for="password">Password</label>
-            <input type="password" id="password" th:field="*{password}" placeholder="Must be at least 8 characters" required>
+            <input type="password" id="password" name="password"
+                   placeholder="Must be at least 8 characters"
+                   required aria-required="true" aria-label="Password">
 
             <button type="submit">Create My Account</button>
         </form>
@@ -394,7 +669,7 @@
 </div>
 
 <footer class="app-footer">
-    &copy; 2024 Secure Share. All rights reserved.
+    &copy; 2025 Secure Share. All rights reserved.
     <a href="#">Privacy Policy</a> |
     <a href="#">Terms of Service</a>
 </footer>

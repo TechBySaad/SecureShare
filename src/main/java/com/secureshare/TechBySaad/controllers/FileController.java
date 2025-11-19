@@ -1,7 +1,7 @@
-package com.secureshare.controllers;
+package com.secureshare.TechBySaad.controllers;
 
-import com.secureshare.models.FileEntity;
-import com.secureshare.services.FileService;
+import com.secureshare.TechBySaad.models.FileEntity;
+import com.secureshare.TechBySaad.services.FileService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

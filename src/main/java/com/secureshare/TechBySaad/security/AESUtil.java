@@ -1,4 +1,4 @@
-package com.secureshare.security;
+package com.secureshare.TechBySaad.security;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
