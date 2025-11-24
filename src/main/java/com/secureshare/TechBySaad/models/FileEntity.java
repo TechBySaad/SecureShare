@@ -2,121 +2,131 @@ package com.secureshare.TechBySaad.models;
 
 import jakarta.persistence.*;
 
-/// This class represents a file stored in the system and maps to a database table
-/// It's a JPA entity that stores file metadata and the actual file content
+/// This class represents a stored file in the application
+/// It contains both metadata and encrypted file content
 @Entity
 @Table(name = "files")
 public class FileEntity {
 
-    /// Primary key that auto-generates when a new file is saved
-    /// The database automatically assigns sequential IDs
+    /// Primary key that uniquely identifies each stored file
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /// Stores the original name of the uploaded file
-    /// This field cannot be null in the database
+    /// Original name of the uploaded file
     @Column(nullable = false)
     private String fileName;
 
-    /// Stores the MIME type of the file (like image/jpeg, application/pdf, etc.)
-    /// Helps browsers handle the file correctly during download
+    /// MIME type of the file, such as "image/png" or "application/pdf"
     private String fileType;
 
-    /// Stores the size of the file in bytes
-    /// Useful for displaying file size information to users
+    /// Size of the file in bytes, stored for display and tracking
     private Long fileSize;
 
-    // The user who uploaded the file
-    /// Stores the username of the person who uploaded this file
-    /// This creates the ownership relationship between users and files
+    /// Username of the person who uploaded this file
+    /// Used to ensure users can only access their own files
     @Column(nullable = false)
     private String uploadedBy;
 
-    /// Stores the actual file content as binary data
-    /// Uses a LONGBLOB column type which can handle large files (up to 4GB)
-    /// This is where the encrypted file data is stored
+    /// Encrypted file content stored in the database
+    /// LONGBLOB allows very large binary storage
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     private byte[] data;
 
+    /// ------------------------------------------------------------
+    /// HYBRID ENCRYPTION SUPPORT FIELDS (X25519 + AES)
+    /// ------------------------------------------------------------
+
+    /// Stores the AES key encrypted using the recipient's public key
+    /// For symmetric-only uploads, this will remain null
+    private byte[] encryptedKey;
+
+    /// Stores the sender's public key used during encryption
+    /// Needed so the receiver can derive the shared secret
+    private byte[] senderPublicKey;
+
     /// Default constructor required by JPA
-    /// Spring uses this when creating entity instances from database results
     public FileEntity() {}
 
-    /// GETTERS & SETTERS
-    /// These methods allow other parts of the application to access and modify the file properties
+    /// ------------------------------------------------------------
+    /// GETTERS AND SETTERS
+    /// ------------------------------------------------------------
 
-    /// Returns the unique identifier for this file
     public Long getId() {
         return id;
     }
 
-    /// Sets the unique identifier (usually done automatically by the database)
     public void setId(Long id) {
         this.id = id;
     }
 
-    /// Returns the original filename as uploaded by the user
     public String getFileName() {
         return fileName;
     }
 
-    /// Sets the filename, typically when creating a new file entity
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
 
-    /// Returns the MIME type of the file
     public String getFileType() {
         return fileType;
     }
 
-    /// Sets the file type, usually determined from the uploaded file
     public void setFileType(String fileType) {
         this.fileType = fileType;
     }
 
-    /// Returns the file size in bytes
     public Long getFileSize() {
         return fileSize;
     }
 
-    /// Sets the file size, calculated when the file is uploaded
     public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
     }
 
-    /// Returns the username of the person who owns this file
     public String getUploadedBy() {
         return uploadedBy;
     }
 
-    /// Sets the file owner, typically the currently logged-in user
     public void setUploadedBy(String uploadedBy) {
         this.uploadedBy = uploadedBy;
     }
 
-    /// Returns the actual file content as a byte array
-    /// This could be encrypted or decrypted data depending on the context
     public byte[] getData() {
         return data;
     }
 
-    /// Stores the file content, usually called when saving an uploaded file
     public void setData(byte[] data) {
         this.data = data;
     }
 
-    /// This method converts the file size from bytes to megabytes for display purposes
-    /// The @Transient annotation means this method is NOT stored in the database
-    /// It's a calculated property that we can use in our views and controllers
-    @Transient
-    public String getFileSizeMB() {
-        /// Convert bytes to megabytes (1 MB = 1024 * 1024 bytes)
-        double mb = (double) fileSize / (1024 * 1024);
-        /// Format the result to show 2 decimal places for readability
-        return String.format("%.2f MB", mb);
+    /// Returns the encrypted AES key for hybrid mode
+    public byte[] getEncryptedKey() {
+        return encryptedKey;
     }
 
+    /// Stores the encrypted AES key for hybrid encryption
+    public void setEncryptedKey(byte[] encryptedKey) {
+        this.encryptedKey = encryptedKey;
+    }
+
+    /// Returns the sender’s public key used during key exchange
+    public byte[] getSenderPublicKey() {
+        return senderPublicKey;
+    }
+
+    /// Saves the sender’s public key for future decryption
+    public void setSenderPublicKey(byte[] senderPublicKey) {
+        this.senderPublicKey = senderPublicKey;
+    }
+
+    /// ------------------------------------------------------------
+    /// UTILITY: Convert file size from bytes to human-readable MB
+    /// ------------------------------------------------------------
+    @Transient
+    public String getFileSizeMB() {
+        double mb = (double) fileSize / (1024 * 1024);
+        return String.format("%.2f MB", mb);
+    }
 }

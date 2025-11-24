@@ -14,53 +14,58 @@ import java.util.Optional;
 @Service
 public class FileService {
 
+    /// Repository that communicates with the database for FileEntity operations
     @Autowired
     private FileRepository fileRepository;
 
-
-    /// SAVE FILE (UPLOAD) — WITH AES ENCRYPTION
-    /// This method handles the entire file upload process including encryption
-    /// It takes the uploaded file and user info, encrypts the content, and saves to database
+    /// ------------------------------------------------------------
+    /// SAVE FILE (UPLOAD) — CURRENTLY AES-ONLY ENCRYPTION
+    /// ------------------------------------------------------------
+    /// This method handles uploading a file and encrypting its data
+    /// Hybrid encryption support fields are stored as null for now
     public void saveFile(MultipartFile file, String uploadedBy) {
         try {
-            /// Create a new FileEntity to store all the file information
+            /// Create a new FileEntity object to store metadata
             FileEntity storedFile = new FileEntity();
             storedFile.setFileName(file.getOriginalFilename());
             storedFile.setFileType(file.getContentType());
             storedFile.setFileSize(file.getSize());
             storedFile.setUploadedBy(uploadedBy);
 
-            /// AES ENCRYPTION - This is where the security magic happens
-            /// We get the application's secret key and use it to encrypt the file bytes
+            /// AES ENCRYPTION — encrypt raw file bytes before saving
             SecretKey key = AESUtil.getAppKey();
             byte[] encryptedBytes = AESUtil.encrypt(file.getBytes(), key);
             storedFile.setData(encryptedBytes);
 
-            /// Save the encrypted file to the database
+            /// Hybrid fields not used yet, so set to null safely
+            storedFile.setEncryptedKey(null);
+            storedFile.setSenderPublicKey(null);
+
+            /// Save encrypted file in database
             fileRepository.save(storedFile);
 
         } catch (Exception e) {
-            /// If anything goes wrong during the upload or encryption process
             e.printStackTrace();
         }
     }
 
-
-    /// LIST ALL FILES OF A USER
-    /// This retrieves all files belonging to a specific user without decrypting them
-    /// The files remain encrypted in storage until someone actually downloads them
+    /// ------------------------------------------------------------
+    /// LIST FILES BELONGING TO A USER
+    /// ------------------------------------------------------------
+    /// Returns all encrypted files for a specific username
+    /// No decryption happens here
     public List<FileEntity> getFilesByUser(String uploadedBy) {
         return fileRepository.findByUploadedBy(uploadedBy);
     }
 
-
-    /// GET ONE FILE — WITH AES DECRYPTION
-    /// This method is used when a user wants to download a file
-    /// It finds the file by ID and decrypts it before returning
+    /// ------------------------------------------------------------
+    /// GET A FILE FOR DOWNLOAD — WITH AES DECRYPTION
+    /// ------------------------------------------------------------
+    /// Used when a user downloads a file
+    /// Currently decrypts using application AES key only
     public FileEntity getFile(Long id) {
         Optional<FileEntity> fileOptional = fileRepository.findById(id);
 
-        /// If the file doesn't exist, return null
         if (fileOptional.isEmpty()) {
             return null;
         }
@@ -70,71 +75,68 @@ public class FileService {
         try {
             SecretKey key = AESUtil.getAppKey();
 
-            /// AES DECRYPTION before returning
-            /// This transforms the encrypted bytes back into the original file content
+            /// Decrypt the stored encrypted file bytes
             byte[] decryptedData = AESUtil.decrypt(file.getData(), key);
             file.setData(decryptedData);
 
         } catch (Exception e) {
-            /// If decryption fails (wrong key, corrupted data, etc.)
             e.printStackTrace();
         }
 
         return file;
     }
 
-
+    /// ------------------------------------------------------------
     /// DELETE FILE BY ID
-    /// Simply removes the file from the database based on its ID
-    /// The file and its encrypted data are permanently deleted
+    /// ------------------------------------------------------------
+    /// Permanently removes a file record from the database
     public void deleteFile(Long id) {
         fileRepository.deleteById(id);
     }
 
-
-    /// SHARE FILE WITH ANOTHER USER (COPY TO THEIR ACCOUNT)
-    /// This creates a copy of a file and assigns it to another user
-    /// Both users get their own independent copy of the file
+    /// ------------------------------------------------------------
+    /// SHARE FILE WITH ANOTHER USER
+    /// ------------------------------------------------------------
+    /// Creates an independent copy of an existing encrypted file
+    /// Currently copies AES-encrypted data as-is
+    /// Hybrid fields are also copied for future support
     public void shareFile(Long fileId, String targetUsername) {
         Optional<FileEntity> fileOptional = fileRepository.findById(fileId);
 
-        /// If the original file doesn't exist, just return without doing anything
         if (fileOptional.isEmpty()) {
-            return; /// file not found
+            return;
         }
 
         FileEntity original = fileOptional.get();
 
-        /// Create a copy of the file for the target user
-        /// We copy all the file metadata and the encrypted data
+        /// Create a duplicate file entry for the recipient
         FileEntity sharedCopy = new FileEntity();
         sharedCopy.setFileName(original.getFileName());
         sharedCopy.setFileType(original.getFileType());
         sharedCopy.setFileSize(original.getFileSize());
         sharedCopy.setUploadedBy(targetUsername);
-        sharedCopy.setData(original.getData()); // already encrypted - no need to re-encrypt
+        sharedCopy.setData(original.getData());
 
-        /// Save the new copy as a separate file in the database
+        /// Copy hybrid encryption fields (even though null for now)
+        sharedCopy.setEncryptedKey(original.getEncryptedKey());
+        sharedCopy.setSenderPublicKey(original.getSenderPublicKey());
+
         fileRepository.save(sharedCopy);
     }
 
-    /// CALCULATE TOTAL STORAGE USED BY A USER
-    /// This sums up all file sizes for a user and formats it in megabytes
-    /// Useful for showing users how much storage space they're using
+    /// ------------------------------------------------------------
+    /// TOTAL STORAGE USED BY USER (FORMATTED IN MB)
+    /// ------------------------------------------------------------
+    /// Sums all file sizes and converts bytes → megabytes
     public String getTotalStorageFormatted(String username) {
-        /// Get all files belonging to this user
         List<FileEntity> userFiles = fileRepository.findByUploadedBy(username);
 
-        /// Sum up all the file sizes in bytes using Java streams
         long totalBytes = userFiles.stream()
                 .mapToLong(FileEntity::getFileSize)
                 .sum();
 
-        /// Convert bytes to megabytes (1 MB = 1024 * 1024 bytes)
         double totalMB = (double) totalBytes / (1024 * 1024);
 
-        /// Format the result to show 2 decimal places for clean display
         return String.format("%.2f MB", totalMB);
     }
-
 }

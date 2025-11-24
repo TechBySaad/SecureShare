@@ -5,46 +5,76 @@ import com.secureshare.TechBySaad.repositories.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/// This service handles all user-related business logic like registration and authentication
-/// It acts as a middle layer between controllers and the database repository
+import javax.crypto.KeyAgreement;
+import java.security.*;
+import java.util.Base64;
+
+/// This service handles all user-related operations such as registration and lookup
+/// It acts as the middle layer between controllers and the database
 @Service
 public class UserService {
 
-    /// Repository that handles database operations for User entities
-    /// Spring automatically injects this dependency through the constructor
+    /// Repository that communicates with the database for User records
     private final UserRepository userRepository;
 
-    /// Password encoder used to securely hash passwords before storing them
-    /// BCrypt is a strong hashing algorithm that includes salt automatically
+    /// BCrypt safely hashes passwords before saving — never store plain text passwords
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    /// Constructor that Spring uses to inject the UserRepository dependency
-    /// This is called dependency injection - Spring provides the actual repository instance
+    /// Constructor-based dependency injection — Spring provides the UserRepository instance
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    /// Checks if a username is already taken in the system
-    /// Used during registration to prevent duplicate usernames
+    /// Checks if a username already exists — prevents duplicate accounts during registration
     public boolean usernameExists(String username) {
         return userRepository.existsByUsername(username);
     }
 
-    /// Handles new user registration with proper security measures
-    /// Takes a user object, hashes the password, and saves to database
+    /// Registers a new user by hashing their password and generating encryption keys
     public User register(User user) {
-        // Hash the password before saving to database
-        /// This converts the plain text password into a secure irreversible hash
-        /// The same password will produce different hashes each time due to built-in salt
+
+        /// 1️⃣ SECURE PASSWORD HASHING
+        /// Converts plain text password into a strong salted hash
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        /// Save the user with the hashed password to the database
+        /// 2️⃣ GENERATE X25519 KEYPAIR FOR ENCRYPTION
+        /// This creates a private & public key per user — used later for secure sharing
+        generateKeyPairForUser(user);
+
+        /// 3️⃣ SAVE USER IN DATABASE
         return userRepository.save(user);
     }
 
-    /// Finds a user by their username
-    /// Used during login to verify user credentials
+    /// Retrieves a user by username — used during login authentication
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    /// --------------------------------------------------------------
+    /// PRIVATE METHOD — CREATES X25519 PUBLIC & PRIVATE KEYS
+    /// --------------------------------------------------------------
+    private void generateKeyPairForUser(User user) {
+        try {
+            /// Create a key pair generator for X25519 (modern elliptic-curve algorithm)
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("X25519");
+
+            /// Initialize generator (no specific key size needed for X25519)
+            keyPairGenerator.initialize(256);
+
+            /// Generate the key pair (public + private key)
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+            /// Encode keys to Base64 so they can be stored as text in the database
+            String publicKeyBase64 = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+            String privateKeyBase64 = Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded());
+
+            /// Store keys inside the user entity
+            user.setPublicKey(publicKeyBase64);
+            user.setPrivateKey(privateKeyBase64);
+
+        } catch (Exception e) {
+            /// If something goes wrong, print the error — but do NOT stop registration
+            e.printStackTrace();
+        }
     }
 }

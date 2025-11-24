@@ -6,49 +6,65 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+/// This controller handles authentication-related pages such as registration and login
+/// It connects the front-end forms to the UserService which performs the actual logic
 @Controller
 public class AuthController {
 
+    /// Service that contains business logic for registering and validating users
     private final UserService userService;
 
-    /// This is the constructor that Spring uses to inject the UserService dependency
-    /// When creating an AuthController, Spring automatically provides the UserService instance
+    /// Constructor-based dependency injection — Spring automatically provides UserService
     public AuthController(UserService userService) {
         this.userService = userService;
     }
 
-    /// Handles GET requests to the /register URL - shows the registration form to users
-    /// We create a new empty User object and pass it to the view so the form can bind to it
+    /// ------------------------------------------------------------
+    /// DISPLAY REGISTRATION PAGE
+    /// ------------------------------------------------------------
+    /// Handles GET requests to "/register"
+    /// Shows an empty registration form to the user
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
+
+        /// Create an empty User object for form binding
         model.addAttribute("user", new User());
+
+        /// Return the register.html page
         return "register";
     }
 
-    /// Handles POST requests to the /register URL - processes the form submission
-    /// The @ModelAttribute automatically populates the User object with form data
+    /// ------------------------------------------------------------
+    /// PROCESS USER REGISTRATION
+    /// ------------------------------------------------------------
+    /// Handles POST requests submitted from the registration form
     @PostMapping("/register")
     public String registerUser(@ModelAttribute User user, Model model) {
 
-        /// First check if the username is already taken in our system
-        /// This prevents duplicate usernames and maintains data integrity
+        /// Check if username already exists — prevents duplicate accounts
         if (userService.usernameExists(user.getUsername())) {
-            /// If username exists, show an error message and return to registration form
+
+            /// Send error back to the form without losing user input
             model.addAttribute("error", "Username already taken!");
             return "register";
         }
 
-        /// If username is available, save the new user to the database
+        /// Register the user — this also:
+        /// ✅ hashes the password
+        /// ✅ generates X25519 keypair (public + private keys)
         userService.register(user);
 
-        /// Show success message and redirect to login page
-        /// The user now needs to log in with their newly created credentials
+        /// Show success message and redirect to login
         model.addAttribute("success", "Account created successfully! Please login.");
+
         return "login";
     }
 
-    /// Handles GET requests to the /login URL - simply displays the login page
-    /// This is a straightforward page display without any complex logic
+    /// ------------------------------------------------------------
+    /// DISPLAY LOGIN PAGE
+    /// ------------------------------------------------------------
+    /// Handles GET requests to "/login"
+    /// Simply returns the login view — Spring Security handles authentication
     @GetMapping("/login")
     public String showLoginPage() {
         return "login";
