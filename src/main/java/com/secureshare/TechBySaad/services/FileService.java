@@ -95,31 +95,40 @@ public class FileService {
     }
 
     /// ------------------------------------------------------------
-    /// SHARE FILE WITH ANOTHER USER
+    /// SHARE FILE WITH ANOTHER USER (UPDATED)
     /// ------------------------------------------------------------
-    /// Creates an independent copy of an existing encrypted file
-    /// Currently copies AES-encrypted data as-is
-    /// Hybrid fields are also copied for future support
-    public void shareFile(Long fileId, String targetUsername) {
+    /// Now supports future encryption method options (AES / X25519)
+    /// Currently still copies AES-encrypted bytes as-is
+    public void shareFile(Long fileId, String targetUsername, String method) {
+
         Optional<FileEntity> fileOptional = fileRepository.findById(fileId);
 
+        /// If original file doesn't exist, do nothing
         if (fileOptional.isEmpty()) {
             return;
         }
 
         FileEntity original = fileOptional.get();
 
-        /// Create a duplicate file entry for the recipient
+        /// Create a new copy of the file for the target user
         FileEntity sharedCopy = new FileEntity();
         sharedCopy.setFileName(original.getFileName());
         sharedCopy.setFileType(original.getFileType());
         sharedCopy.setFileSize(original.getFileSize());
         sharedCopy.setUploadedBy(targetUsername);
+
+        /// CURRENT BEHAVIOUR:
+        /// Always reuse existing encrypted bytes (AES default)
         sharedCopy.setData(original.getData());
 
-        /// Copy hybrid encryption fields (even though null for now)
+        /// Copy hybrid encryption fields (still null for now)
         sharedCopy.setEncryptedKey(original.getEncryptedKey());
         sharedCopy.setSenderPublicKey(original.getSenderPublicKey());
+
+        /// LATER:
+        /// if (method.equals("X25519")) {
+        ///     // Step 3: implement key wrapping + re-encryption
+        /// }
 
         fileRepository.save(sharedCopy);
     }

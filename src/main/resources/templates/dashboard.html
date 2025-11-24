@@ -15,19 +15,15 @@
             --border-color: #e0e0e0;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Inter', Arial, sans-serif;
             background-color: var(--background-light);
             color: var(--text-color);
-            line-height: 1.6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Header */
         .app-header {
             background-color: var(--card-background);
             border-bottom: 1px solid var(--border-color);
@@ -35,13 +31,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .project-title {
-            color: var(--primary-color);
             font-size: 24px;
             font-weight: 700;
+            color: var(--primary-color);
             text-decoration: none;
         }
 
@@ -57,39 +52,13 @@
             flex-grow: 1;
             padding: 30px 20px;
             max-width: 1200px;
-            width: 100%;
             margin: 0 auto;
         }
 
-        h2 { font-size: 28px; font-weight: 600; margin-bottom: 10px; }
-
-        /* Stats */
-        .stats-grid {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
-        }
-
-        .stat-card {
-            background: var(--card-background);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-            border-left: 5px solid var(--primary-color);
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .stat-card h4 { color: #70757a; margin-bottom: 10px; }
-        .stat-card p { font-size: 35px; color: var(--primary-color); }
-
-        /* Table */
         table {
             width: 100%;
             background: var(--card-background);
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             margin-bottom: 30px;
             border-collapse: collapse;
         }
@@ -106,56 +75,43 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        tr:hover { background-color: #f7f7f7; }
-
         .action-links a {
             margin-right: 15px;
-            text-decoration: none;
-            color: var(--primary-color);
             font-weight: 500;
+            color: var(--primary-color);
+            text-decoration: none;
         }
 
-        .delete-link { color: var(--danger-color) !important; }
-
-        /* Upload Area */
-        .upload-section {
-            background: var(--card-background);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        /* Share Popup */
-        #sharePopup {
-            display: none;
-            position: fixed;
-            left: 50%; top: 50%;
-            transform: translate(-50%,-50%);
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            width: 300px;
-            z-index: 9999;
-        }
-
-        #sharePopup input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            margin-top: 8px;
-        }
+        .delete-link { color: var(--danger-color); }
 
         #popupOverlay {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top:0; left:0;
+            width:100%; height:100%;
             background: rgba(0,0,0,0.4);
             z-index: 9998;
         }
 
+        #sharePopup {
+            display: none;
+            position: fixed;
+            left:50%; top:50%;
+            transform: translate(-50%,-50%);
+            background:white;
+            padding:25px;
+            width:300px;
+            border-radius:10px;
+            z-index:9999;
+        }
+
+        select, input {
+            width:100%;
+            padding:10px;
+            border:1px solid var(--border-color);
+            border-radius:6px;
+            margin-top:8px;
+        }
     </style>
 </head>
 
@@ -169,21 +125,6 @@
 <div class="main-content">
 
     <h2>Welcome Back, <span th:text="${username}"></span>!</h2>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h4>TOTAL FILES</h4>
-            <p th:text="${files.size()}">0</p>
-        </div>
-
-        <div class="stat-card">
-            <h4>TOTAL STORAGE</h4>
-            <p th:text="${totalStorageFormattedMB}">0 MB</p>
-        </div>
-    </div>
-
-    <!-- File List -->
-    <h3>Your Files</h3>
 
     <table>
         <thead>
@@ -213,33 +154,27 @@
         </tr>
         </tbody>
     </table>
-
-    <!-- Upload Section -->
-    <div class="upload-section">
-        <h3>Upload File</h3>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
-            <button type="submit" class="btn-primary">Upload</button>
-        </form>
-    </div>
-
 </div>
 
-<!-- Background Overlay -->
 <div id="popupOverlay" onclick="closeSharePopup()"></div>
 
-<!-- Share Popup -->
 <div id="sharePopup">
-    <h3 style="text-align:center; margin-bottom:10px;">Share File</h3>
+    <h3 style="text-align:center;">Share File</h3>
 
     <form id="shareForm" method="post">
         <label>Enter Username:</label>
         <input type="text" name="targetUser" required>
 
+        <label>Select Encryption:</label>
+        <select name="method" required>
+            <option value="AES" selected>AES (Default)</option>
+            <option value="X25519">X25519 (Coming Soon)</option>
+        </select>
+
         <br><br>
 
-        <button class="btn-primary" style="width:100%;">Share</button>
-        <button type="button" style="margin-top:10px;width:100%;padding:10px;background:#ccc;border:none;border-radius:6px;"
+        <button style="width:100%;padding:10px;">Share</button>
+        <button type="button" style="margin-top:10px;width:100%;padding:10px;background:#ccc;"
                 onclick="closeSharePopup()">Cancel</button>
     </form>
 </div>
@@ -256,10 +191,6 @@
         document.getElementById("sharePopup").style.display = "none";
     }
 </script>
-
-<footer class="app-footer">
-    &copy; 2025 Secure Share. All rights reserved.
-</footer>
 
 </body>
 </html>
