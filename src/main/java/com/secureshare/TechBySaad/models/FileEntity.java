@@ -2,13 +2,13 @@ package com.secureshare.TechBySaad.models;
 
 import jakarta.persistence.*;
 
-/// This class represents a stored file in the application
-/// It contains both metadata and encrypted file content
+/// Represents a stored encrypted file in the application.
+/// Supports both AES-only encryption and Hybrid (X25519 + AES) encryption.
 @Entity
 @Table(name = "files")
 public class FileEntity {
 
-    /// Primary key that uniquely identifies each stored file
+    /// Primary key for the file
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,41 +17,43 @@ public class FileEntity {
     @Column(nullable = false)
     private String fileName;
 
-    /// MIME type of the file, such as "image/png" or "application/pdf"
+    /// MIME type (image/png, application/pdf, etc.)
     private String fileType;
 
-    /// Size of the file in bytes, stored for display and tracking
+    /// Size of file in bytes
     private Long fileSize;
 
-    /// Username of the person who uploaded this file
-    /// Used to ensure users can only access their own files
+    /// Username of the uploader / owner
     @Column(nullable = false)
     private String uploadedBy;
 
-    /// Encrypted file content stored in the database
-    /// LONGBLOB allows very large binary storage
+    /// Encrypted file content (AES-GCM output)
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     private byte[] data;
 
-    /// ------------------------------------------------------------
-    /// HYBRID ENCRYPTION SUPPORT FIELDS (X25519 + AES)
-    /// ------------------------------------------------------------
+    // ------------------------------------------------------------
+    // HYBRID ENCRYPTION FIELDS (X25519 + AES Key Wrapping)
+    // ------------------------------------------------------------
 
-    /// Stores the AES key encrypted using the recipient's public key
-    /// For symmetric-only uploads, this will remain null
+    /// AES file key encrypted using recipient's public key (wrapped key)
     private byte[] encryptedKey;
 
-    /// Stores the sender's public key used during encryption
-    /// Needed so the receiver can derive the shared secret
+    /// Sender's public key used for X25519 ECDH shared secret
     private byte[] senderPublicKey;
 
-    /// Default constructor required by JPA
+    /// IV used when encrypting the AES key with AES-GCM
+    /// Required by recipient to decrypt the wrapped key
+    private byte[] keyIv;
+
+    // ------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------
     public FileEntity() {}
 
-    /// ------------------------------------------------------------
-    /// GETTERS AND SETTERS
-    /// ------------------------------------------------------------
+    // ------------------------------------------------------------
+    // Getters and Setters
+    // ------------------------------------------------------------
 
     public Long getId() {
         return id;
@@ -101,29 +103,37 @@ public class FileEntity {
         this.data = data;
     }
 
-    /// Returns the encrypted AES key for hybrid mode
+    /// Returns wrapped AES key (hybrid mode)
     public byte[] getEncryptedKey() {
         return encryptedKey;
     }
 
-    /// Stores the encrypted AES key for hybrid encryption
+    /// Saves wrapped AES key
     public void setEncryptedKey(byte[] encryptedKey) {
         this.encryptedKey = encryptedKey;
     }
 
-    /// Returns the sender’s public key used during key exchange
+    /// Returns sender's X25519 public key
     public byte[] getSenderPublicKey() {
         return senderPublicKey;
     }
 
-    /// Saves the sender’s public key for future decryption
     public void setSenderPublicKey(byte[] senderPublicKey) {
         this.senderPublicKey = senderPublicKey;
     }
 
-    /// ------------------------------------------------------------
-    /// UTILITY: Convert file size from bytes to human-readable MB
-    /// ------------------------------------------------------------
+    /// IV for AES-GCM key wrapping
+    public byte[] getKeyIv() {
+        return keyIv;
+    }
+
+    public void setKeyIv(byte[] keyIv) {
+        this.keyIv = keyIv;
+    }
+
+    // ------------------------------------------------------------
+    // Utility: Get file size in MB (not stored in DB)
+    // ------------------------------------------------------------
     @Transient
     public String getFileSizeMB() {
         double mb = (double) fileSize / (1024 * 1024);

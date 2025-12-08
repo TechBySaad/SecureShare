@@ -50,8 +50,8 @@ public class AuthController {
         }
 
         /// Register the user — this also:
-        /// ✅ hashes the password
-        /// ✅ generates X25519 keypair (public + private keys)
+        ///  hashes the password
+        ///  generates X25519 keypair (public + private keys)
         userService.register(user);
 
         /// Show success message and redirect to login

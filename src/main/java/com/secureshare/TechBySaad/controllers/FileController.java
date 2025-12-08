@@ -65,7 +65,7 @@ public class FileController {
                             Model model) {
 
         // AES is default
-        fileService.shareFile(id, targetUser, "AES");
+        fileService.shareFile(id, targetUser, "AES", null);
 
         model.addAttribute("success",
                 "File shared with " + targetUser + " using " + method + " successfully!");

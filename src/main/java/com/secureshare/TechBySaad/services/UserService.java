@@ -89,51 +89,77 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    /// Encrypts the private key using AES
-    /// NOTE: This is temporary — we will replace with stronger PBKDF2
+    /// ------------------------------------------------------------
+    /// SECURE PRIVATE KEY ENCRYPTION USING PBKDF2 + AES-GCM
+    /// ------------------------------------------------------------
+
     private String encryptPrivateKey(String privateKey, String password) throws Exception {
 
-        /// Create a 16-byte AES key from the password (simple version)
-        byte[] aesKeyBytes = password
-                .repeat(2)                 // ensure length
-                .substring(0, 16)          // trim to AES-128 size
-                .getBytes();
+        // 1) Generate random salt for PBKDF2
+        byte[] salt = new byte[16];
+        new java.security.SecureRandom().nextBytes(salt);
 
-        SecretKey secretKey = new SecretKeySpec(aesKeyBytes, "AES");
+        // 2) Derive AES key from password using PBKDF2
+        javax.crypto.SecretKeyFactory factory =
+                javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
 
-        /// Encrypt using AES in default ECB mode (we will upgrade this later)
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        javax.crypto.spec.PBEKeySpec spec =
+                new javax.crypto.spec.PBEKeySpec(password.toCharArray(), salt, 65536, 256);
 
-        byte[] encrypted = cipher.doFinal(privateKey.getBytes());
+        SecretKey derivedKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
 
-        /// Return encrypted value as Base64 string
-        return Base64.getEncoder().encodeToString(encrypted);
+        // 3) Generate random IV for AES-GCM
+        byte[] iv = new byte[12];
+        new java.security.SecureRandom().nextBytes(iv);
+
+        // 4) AES-GCM encryption
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, derivedKey, new javax.crypto.spec.GCMParameterSpec(128, iv));
+
+        byte[] encryptedBytes = cipher.doFinal(privateKey.getBytes());
+
+        // 5) Store salt + iv + ciphertext together (Base64)
+        byte[] output = new byte[salt.length + iv.length + encryptedBytes.length];
+        System.arraycopy(salt, 0, output, 0, salt.length);
+        System.arraycopy(iv, 0, output, salt.length, iv.length);
+        System.arraycopy(encryptedBytes, 0, output, salt.length + iv.length, encryptedBytes.length);
+
+        return Base64.getEncoder().encodeToString(output);
     }
 
-    /// Decrypts the private key using AES and the user's raw password
-    /// This will be called later when performing asymmetric decryption
+    /// ------------------------------------------------------------
+    /// DECRYPT PRIVATE KEY USING PBKDF2 + AES-GCM
+    /// ------------------------------------------------------------
     public String decryptPrivateKey(String encryptedPrivateKey, String password) throws Exception {
 
-        /// Rebuild the same AES key used during encryption
-        byte[] aesKeyBytes = password
-                .repeat(2)                 // ensure length
-                .substring(0, 16)          // trim to 16 bytes
-                .getBytes();
+        byte[] allBytes = Base64.getDecoder().decode(encryptedPrivateKey);
 
-        SecretKey secretKey = new SecretKeySpec(aesKeyBytes, "AES");
+        // read salt (16 bytes)
+        byte[] salt = java.util.Arrays.copyOfRange(allBytes, 0, 16);
 
-        /// Decode the stored Base64 encrypted key
-        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedPrivateKey);
+        // read iv (12 bytes)
+        byte[] iv = java.util.Arrays.copyOfRange(allBytes, 16, 28);
 
-        /// Decrypt using AES
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        // remaining = ciphertext
+        byte[] ciphertext = java.util.Arrays.copyOfRange(allBytes, 28, allBytes.length);
 
-        byte[] decrypted = cipher.doFinal(encryptedBytes);
+        // rebuild PBKDF2 key
+        javax.crypto.SecretKeyFactory factory =
+                javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
 
-        /// Return the original private key as Base64 text
-        return new String(decrypted);
+        javax.crypto.spec.PBEKeySpec spec =
+                new javax.crypto.spec.PBEKeySpec(password.toCharArray(), salt, 65536, 256);
+
+        SecretKey derivedKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+
+        // AES-GCM decryption
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, derivedKey, new javax.crypto.spec.GCMParameterSpec(128, iv));
+
+        byte[] decryptedBytes = cipher.doFinal(ciphertext);
+
+        return new String(decryptedBytes);
     }
+
 
 }

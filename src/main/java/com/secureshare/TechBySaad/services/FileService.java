@@ -1,47 +1,70 @@
 package com.secureshare.TechBySaad.services;
 
 import com.secureshare.TechBySaad.models.FileEntity;
+import com.secureshare.TechBySaad.models.User;
 import com.secureshare.TechBySaad.repositories.FileRepository;
 import com.secureshare.TechBySaad.security.AESUtil;
+import com.secureshare.TechBySaad.security.X25519Util;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.spec.PKCS8EncodedKeySpec;
+
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class FileService {
 
-    /// Repository that communicates with the database for FileEntity operations
     @Autowired
     private FileRepository fileRepository;
 
-    /// ------------------------------------------------------------
-    /// SAVE FILE (UPLOAD) — CURRENTLY AES-ONLY ENCRYPTION
-    /// ------------------------------------------------------------
-    /// This method handles uploading a file and encrypting its data
-    /// Hybrid encryption support fields are stored as null for now
+    @Autowired
+    private com.secureshare.TechBySaad.repositories.UserRepository userRepository;
+
+    @Autowired
+    private com.secureshare.TechBySaad.services.UserService userService;
+
+    // Ensure BouncyCastle provider is loaded
+    static {
+        if (Security.getProvider("BC") == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+    }
+
+    // ------------------------------------------------------------
+    // SAVE FILE (UPLOAD)
+    // ------------------------------------------------------------
     public void saveFile(MultipartFile file, String uploadedBy) {
         try {
-            /// Create a new FileEntity object to store metadata
             FileEntity storedFile = new FileEntity();
             storedFile.setFileName(file.getOriginalFilename());
             storedFile.setFileType(file.getContentType());
             storedFile.setFileSize(file.getSize());
             storedFile.setUploadedBy(uploadedBy);
 
-            /// AES ENCRYPTION — encrypt raw file bytes before saving
+            // Encrypt using app-wide AES key
             SecretKey key = AESUtil.getAppKey();
             byte[] encryptedBytes = AESUtil.encrypt(file.getBytes(), key);
             storedFile.setData(encryptedBytes);
 
-            /// Hybrid fields not used yet, so set to null safely
+            // Hybrid fields unused for direct uploads
             storedFile.setEncryptedKey(null);
             storedFile.setSenderPublicKey(null);
+            storedFile.setKeyIv(null);
 
-            /// Save encrypted file in database
             fileRepository.save(storedFile);
 
         } catch (Exception e) {
@@ -49,35 +72,26 @@ public class FileService {
         }
     }
 
-    /// ------------------------------------------------------------
-    /// LIST FILES BELONGING TO A USER
-    /// ------------------------------------------------------------
-    /// Returns all encrypted files for a specific username
-    /// No decryption happens here
+    // ------------------------------------------------------------
+    // LIST FILES PER USER
+    // ------------------------------------------------------------
     public List<FileEntity> getFilesByUser(String uploadedBy) {
         return fileRepository.findByUploadedBy(uploadedBy);
     }
 
-    /// ------------------------------------------------------------
-    /// GET A FILE FOR DOWNLOAD — WITH AES DECRYPTION
-    /// ------------------------------------------------------------
-    /// Used when a user downloads a file
-    /// Currently decrypts using application AES key only
+    // ------------------------------------------------------------
+    // DOWNLOAD FILE (AES ONLY FOR NOW)
+    // ------------------------------------------------------------
     public FileEntity getFile(Long id) {
         Optional<FileEntity> fileOptional = fileRepository.findById(id);
-
-        if (fileOptional.isEmpty()) {
-            return null;
-        }
+        if (fileOptional.isEmpty()) return null;
 
         FileEntity file = fileOptional.get();
 
         try {
             SecretKey key = AESUtil.getAppKey();
-
-            /// Decrypt the stored encrypted file bytes
-            byte[] decryptedData = AESUtil.decrypt(file.getData(), key);
-            file.setData(decryptedData);
+            byte[] decrypted = AESUtil.decrypt(file.getData(), key);
+            file.setData(decrypted);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,57 +100,100 @@ public class FileService {
         return file;
     }
 
-    /// ------------------------------------------------------------
-    /// DELETE FILE BY ID
-    /// ------------------------------------------------------------
-    /// Permanently removes a file record from the database
+    // ------------------------------------------------------------
+    // DELETE FILE
+    // ------------------------------------------------------------
     public void deleteFile(Long id) {
         fileRepository.deleteById(id);
     }
 
-    /// ------------------------------------------------------------
-    /// SHARE FILE WITH ANOTHER USER (UPDATED)
-    /// ------------------------------------------------------------
-    /// Now supports future encryption method options (AES / X25519)
-    /// Currently still copies AES-encrypted bytes as-is
-    public void shareFile(Long fileId, String targetUsername, String method) {
+    // ------------------------------------------------------------
+    // SHARE FILE (AES or X25519 Hybrid)
+    // ------------------------------------------------------------
+    public void shareFile(Long fileId, String targetUsername, String method, String senderPassword) {
 
         Optional<FileEntity> fileOptional = fileRepository.findById(fileId);
-
-        /// If original file doesn't exist, do nothing
-        if (fileOptional.isEmpty()) {
-            return;
-        }
+        if (fileOptional.isEmpty()) return;
 
         FileEntity original = fileOptional.get();
 
-        /// Create a new copy of the file for the target user
+        // Create new shared copy
         FileEntity sharedCopy = new FileEntity();
         sharedCopy.setFileName(original.getFileName());
         sharedCopy.setFileType(original.getFileType());
         sharedCopy.setFileSize(original.getFileSize());
         sharedCopy.setUploadedBy(targetUsername);
 
-        /// CURRENT BEHAVIOUR:
-        /// Always reuse existing encrypted bytes (AES default)
+        // Copy encrypted data
         sharedCopy.setData(original.getData());
 
-        /// Copy hybrid encryption fields (still null for now)
-        sharedCopy.setEncryptedKey(original.getEncryptedKey());
-        sharedCopy.setSenderPublicKey(original.getSenderPublicKey());
+        // Reset hybrid fields
+        sharedCopy.setEncryptedKey(null);
+        sharedCopy.setSenderPublicKey(null);
+        sharedCopy.setKeyIv(null);
 
-        /// LATER:
-        /// if (method.equals("X25519")) {
-        ///     // Step 3: implement key wrapping + re-encryption
-        /// }
+        // ------------------------------------------------------------
+        // HYBRID MODE (X25519)
+        // ------------------------------------------------------------
+        if ("X25519".equalsIgnoreCase(method)) {
 
+            try {
+                // STEP 1: Get recipient public key
+                User recipient = userRepository.findByUsername(targetUsername);
+                if (recipient == null || recipient.getPublicKey() == null) return;
+
+                byte[] recipientPublicKeyBytes =
+                        Base64.getDecoder().decode(recipient.getPublicKey());
+
+                // STEP 2: Decrypt sender private key
+                String senderUsername = original.getUploadedBy();
+                User sender = userRepository.findByUsername(senderUsername);
+                if (sender == null || sender.getPrivateKey() == null) return;
+
+                String senderPrivateKeyBase64 =
+                        userService.decryptPrivateKey(sender.getPrivateKey(), senderPassword);
+
+                byte[] senderPrivateKeyBytes = Base64.getDecoder().decode(senderPrivateKeyBase64);
+
+                PKCS8EncodedKeySpec pkcs8 = new PKCS8EncodedKeySpec(senderPrivateKeyBytes);
+                KeyFactory keyFactory = KeyFactory.getInstance("X25519", "BC");
+                PrivateKey senderPrivateKey = keyFactory.generatePrivate(pkcs8);
+
+                // STEP 3: Generate ephemeral key pair
+                KeyPair ephemeralKeyPair = X25519Util.generateEphemeralKeyPair();
+
+                // STEP 4: Compute shared secret
+                byte[] sharedSecret = X25519Util.computeSharedSecret(
+                        senderPrivateKey, recipientPublicKeyBytes);
+
+                // STEP 5: Derive AES-256 wrapping key
+                byte[] wrappingKeyBytes = X25519Util.deriveAesKey(sharedSecret);
+                SecretKeySpec wrappingKey = new SecretKeySpec(wrappingKeyBytes, "AES");
+
+                // STEP 6: Wrap (encrypt) the AES file key
+                byte[] fileAesKeyBytes = AESUtil.getAppKey().getEncoded();
+                byte[] wrappedCombined = AESUtil.encrypt(fileAesKeyBytes, wrappingKey);
+
+                byte[] keyIv = Arrays.copyOfRange(wrappedCombined, 0, 12);
+                byte[] encryptedKey = Arrays.copyOfRange(wrappedCombined, 12, wrappedCombined.length);
+
+                // STEP 7: Save hybrid fields
+                sharedCopy.setEncryptedKey(encryptedKey);
+                sharedCopy.setKeyIv(keyIv);
+                sharedCopy.setSenderPublicKey(ephemeralKeyPair.getPublic().getEncoded());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // SAVE SHARED COPY
         fileRepository.save(sharedCopy);
     }
 
-    /// ------------------------------------------------------------
-    /// TOTAL STORAGE USED BY USER (FORMATTED IN MB)
-    /// ------------------------------------------------------------
-    /// Sums all file sizes and converts bytes → megabytes
+    // ------------------------------------------------------------
+    // USER STORAGE STATS
+    // ------------------------------------------------------------
     public String getTotalStorageFormatted(String username) {
         List<FileEntity> userFiles = fileRepository.findByUploadedBy(username);
 
@@ -145,7 +202,6 @@ public class FileService {
                 .sum();
 
         double totalMB = (double) totalBytes / (1024 * 1024);
-
         return String.format("%.2f MB", totalMB);
     }
 }
