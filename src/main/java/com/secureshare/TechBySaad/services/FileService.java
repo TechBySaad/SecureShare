@@ -192,8 +192,113 @@ public class FileService {
     }
 
     // ------------------------------------------------------------
-    // USER STORAGE STATS
+// HYBRID DECRYPTION (IMPLEMENTED: unwrap + decrypt)
+// ------------------------------------------------------------
+    public byte[] decryptHybridFile(FileEntity file, String password, String username) {
+
+        // 1) Get the encrypted AES key
+        byte[] encryptedKey = file.getEncryptedKey();
+
+        // 2) Get the IV used to wrap the AES key
+        byte[] keyIv = file.getKeyIv();
+
+        // 3) Get sender's ephemeral public key
+        byte[] senderPublicKeyBytes = file.getSenderPublicKey();
+
+        // If the file was not shared with hybrid mode, stop here
+        if (senderPublicKeyBytes == null) {
+            return null;
+        }
+
+        // ------------------------------------------------------------
+        // STEP 2: Load recipient's encrypted private key and decrypt it
+        // ------------------------------------------------------------
+        User recipientUser = userRepository.findByUsername(username);
+        if (recipientUser == null || recipientUser.getPrivateKey() == null) {
+            // no keys available — cannot perform hybrid decryption
+            return null;
+        }
+
+        String recipientPrivateKeyBase64;
+        try {
+            recipientPrivateKeyBase64 = userService.decryptPrivateKey(recipientUser.getPrivateKey(), password);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // wrong password or decryption error
+            return null;
+        }
+
+        // Convert Base64 -> raw PKCS8 bytes -> PrivateKey object
+        byte[] recipientPrivateKeyBytes = Base64.getDecoder().decode(recipientPrivateKeyBase64);
+        PrivateKey recipientPrivateKey;
+        try {
+            PKCS8EncodedKeySpec pkcs8Spec = new PKCS8EncodedKeySpec(recipientPrivateKeyBytes);
+            KeyFactory kf = KeyFactory.getInstance("X25519", "BC");
+            recipientPrivateKey = kf.generatePrivate(pkcs8Spec);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // ------------------------------------------------------------
+        // STEP 3: Compute shared secret using X25519 (ECDH)
+        // ------------------------------------------------------------
+        byte[] sharedSecret;
+        try {
+            sharedSecret = X25519Util.computeSharedSecret(recipientPrivateKey, senderPublicKeyBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // ------------------------------------------------------------
+        // STEP 4: Derive AES-256 unwrapping key using HKDF
+        // ------------------------------------------------------------
+        SecretKeySpec unwrapKey;
+        try {
+            byte[] unwrapKeyBytes = X25519Util.deriveAesKey(sharedSecret);
+            unwrapKey = new SecretKeySpec(unwrapKeyBytes, "AES");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // ------------------------------------------------------------
+        // STEP 5: Unwrap the AES file key (AES-GCM) and decrypt the file
+        // ------------------------------------------------------------
+        if (encryptedKey == null || keyIv == null) {
+            // Nothing to unwrap — not a hybrid file
+            return null;
+        }
+
+        try {
+            // Reconstruct the combined blob that AESUtil.decrypt expects:
+            // [12-byte IV || ciphertext]
+            byte[] combined = new byte[keyIv.length + encryptedKey.length];
+            System.arraycopy(keyIv, 0, combined, 0, keyIv.length);
+            System.arraycopy(encryptedKey, 0, combined, keyIv.length, encryptedKey.length);
+
+            // Decrypt the wrapped file AES key using the unwrap key
+            byte[] fileAesKeyBytes = AESUtil.decrypt(combined, unwrapKey);
+
+            // Build a SecretKeySpec for the actual file AES key
+            SecretKeySpec fileKeySpec = new SecretKeySpec(fileAesKeyBytes, "AES");
+
+            // Decrypt the actual file bytes (file.getData() is ciphertext)
+            byte[] decryptedFileBytes = AESUtil.decrypt(file.getData(), fileKeySpec);
+
+            // Return decrypted file bytes to caller
+            return decryptedFileBytes;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     // ------------------------------------------------------------
+// USER STORAGE STATS
+// ------------------------------------------------------------
     public String getTotalStorageFormatted(String username) {
         List<FileEntity> userFiles = fileRepository.findByUploadedBy(username);
 
