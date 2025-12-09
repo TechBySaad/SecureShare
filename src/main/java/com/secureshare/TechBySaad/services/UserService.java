@@ -5,6 +5,7 @@ import com.secureshare.TechBySaad.repositories.UserRepository;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Arrays;
 
 import jakarta.annotation.PostConstruct;
 
@@ -130,36 +131,36 @@ public class UserService {
     /// ------------------------------------------------------------
     /// DECRYPT PRIVATE KEY USING PBKDF2 + AES-GCM
     /// ------------------------------------------------------------
-    public String decryptPrivateKey(String encryptedPrivateKey, String password) throws Exception {
+    // Replace the existing decryptPrivateKey method with this exact code.
+    public String decryptPrivateKey(String encryptedPrivateKeyBase64, String password) {
+        try {
+            byte[] all = Base64.getDecoder().decode(encryptedPrivateKeyBase64);
 
-        byte[] allBytes = Base64.getDecoder().decode(encryptedPrivateKey);
+            // Structure we stored earlier: [16-byte salt][12-byte iv][ciphertext]
+            byte[] salt = java.util.Arrays.copyOfRange(all, 0, 16);
+            byte[] iv = java.util.Arrays.copyOfRange(all, 16, 28);
+            byte[] ciphertext = java.util.Arrays.copyOfRange(all, 28, all.length);
 
-        // read salt (16 bytes)
-        byte[] salt = java.util.Arrays.copyOfRange(allBytes, 0, 16);
+            javax.crypto.SecretKeyFactory factory =
+                    javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
 
-        // read iv (12 bytes)
-        byte[] iv = java.util.Arrays.copyOfRange(allBytes, 16, 28);
+            javax.crypto.spec.PBEKeySpec spec =
+                    new javax.crypto.spec.PBEKeySpec(password.toCharArray(), salt, 65536, 256);
 
-        // remaining = ciphertext
-        byte[] ciphertext = java.util.Arrays.copyOfRange(allBytes, 28, allBytes.length);
+            byte[] keyBytes = factory.generateSecret(spec).getEncoded();
+            javax.crypto.SecretKey derivedKey = new javax.crypto.spec.SecretKeySpec(keyBytes, "AES");
 
-        // rebuild PBKDF2 key
-        javax.crypto.SecretKeyFactory factory =
-                javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(javax.crypto.Cipher.DECRYPT_MODE, derivedKey, new javax.crypto.spec.GCMParameterSpec(128, iv));
 
-        javax.crypto.spec.PBEKeySpec spec =
-                new javax.crypto.spec.PBEKeySpec(password.toCharArray(), salt, 65536, 256);
+            byte[] decrypted = cipher.doFinal(ciphertext);
 
-        SecretKey derivedKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-
-        // AES-GCM decryption
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        cipher.init(Cipher.DECRYPT_MODE, derivedKey, new javax.crypto.spec.GCMParameterSpec(128, iv));
-
-        byte[] decryptedBytes = cipher.doFinal(ciphertext);
-
-        return new String(decryptedBytes);
+            // decrypted is the original Base64-encoded private key string
+            return new String(decrypted);
+        } catch (Exception e) {
+            // Wrong password or corrupted data -> return null so callers must abort.
+            return null;
+        }
     }
-
 
 }

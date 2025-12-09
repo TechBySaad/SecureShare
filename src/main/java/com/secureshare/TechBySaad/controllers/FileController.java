@@ -33,6 +33,7 @@ public class FileController {
         }
 
         model.addAttribute("files", fileService.getFilesByUser(username));
+        model.addAttribute("totalStorageFormattedMB", fileService.getTotalStorageFormatted(username));
         return "dashboard";
     }
 
@@ -42,55 +43,57 @@ public class FileController {
         return "redirect:/dashboard";
     }
 
-    /**
-     * Download endpoint:
-     * - Uses POST because the password is sent in request body/params (safer than GET).
-     * - If the file is hybrid (has encryptedKey + keyIv + senderPublicKey) we require the user's password.
-     * - For AES-only files we use existing AES flow.
-     */
     @PostMapping("/download/{id}")
-    public ResponseEntity<byte[]> downloadFile(
+    public ResponseEntity<?> downloadFile(
             @PathVariable Long id,
-            @RequestParam("password") String password,
+            @RequestParam(value = "password", required = false) String password,
             Authentication auth,
-            Model model
-    ) {
+            Model model) {
 
         String username = auth.getName();
-
-        // STEP 1: Load file (without auto-decrypt)
         FileEntity file = fileService.getRawFile(id);
+
         if (file == null) {
             return ResponseEntity.notFound().build();
         }
 
+        boolean isHybrid =
+                file.getEncryptedKey() != null &&
+                        file.getSenderPublicKey() != null &&
+                        file.getKeyIv() != null;
+
         byte[] decrypted;
 
         try {
-            // STEP 2: Check if hybrid fields exist
-            if (file.getEncryptedKey() != null &&
-                    file.getSenderPublicKey() != null &&
-                    file.getKeyIv() != null) {
+            if (isHybrid) {
 
-                // HYBRID FILE DECRYPTION
+                // FORCE password for hybrid
+                if (password == null || password.trim().isEmpty()) {
+                    return ResponseEntity
+                            .badRequest()
+                            .body("Password required for X25519-encrypted file.");
+                }
+
                 decrypted = fileService.decryptHybridFile(file, password, username);
 
+                // WRONG PASSWORD → decrypted = null
+                if (decrypted == null) {
+                    return ResponseEntity
+                            .badRequest()
+                            .body("Wrong password. File decryption failed.");
+                }
+
             } else {
-                // AES-ONLY FILE
+                // AES-only file
                 decrypted = fileService.decryptAESOnly(file);
             }
 
-            if (decrypted == null) {
-                model.addAttribute("error", "Wrong password or decryption failed!");
-                return ResponseEntity.badRequest().build();
-            }
-
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity
+                    .badRequest()
+                    .body("Server error during decryption.");
         }
 
-        // STEP 3: Return decrypted file to user
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=\"" + file.getFileName() + "\"")
                 .header("Content-Type", file.getFileType())
@@ -105,13 +108,16 @@ public class FileController {
                             Authentication auth,
                             Model model) {
 
-        // Pass the password to service (null is OK for AES)
-        fileService.shareFile(id, targetUser, method, password);
+        boolean ok = fileService.shareFile(id, targetUser, method, password);
 
-        model.addAttribute("success",
-                "File shared with " + targetUser + " using " + method + " successfully!");
+        if (ok) {
+            model.addAttribute("success", "File shared with " + targetUser + " using " + method + " successfully!");
+        } else {
+            model.addAttribute("error", "Failed to share file. Wrong password or missing keys.");
+        }
 
         model.addAttribute("files", fileService.getFilesByUser(auth.getName()));
+        model.addAttribute("totalStorageFormattedMB", fileService.getTotalStorageFormatted(auth.getName()));
 
         return "dashboard";
     }
