@@ -20,7 +20,6 @@
             margin: 0;
         }
 
-        /* Header */
         .header {
             background: var(--card);
             padding: 15px 40px;
@@ -44,14 +43,12 @@
             text-decoration: none;
         }
 
-        /* Main Container */
         .container {
             max-width: 1100px;
             margin: auto;
             padding: 30px 20px;
         }
 
-        /* Stats Cards */
         .stats {
             display: flex;
             gap: 20px;
@@ -77,7 +74,6 @@
             color: var(--primary-color);
         }
 
-        /* File Table */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -109,6 +105,7 @@
             margin-right: 12px;
             color: var(--primary-color);
             font-weight: 500;
+            cursor: pointer;
             text-decoration: none;
         }
 
@@ -116,7 +113,6 @@
             color: var(--danger-color) !important;
         }
 
-        /* Upload Box */
         .upload-box {
             background: var(--card);
             padding: 20px;
@@ -124,7 +120,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
 
-        /* Share Popup */
+        /* Popup overlay */
         #popupOverlay {
             display: none;
             position: fixed;
@@ -135,7 +131,8 @@
             z-index: 9998;
         }
 
-        #sharePopup {
+        /* Generic Popup Box */
+        .popupBox {
             display: none;
             position: fixed;
             top: 50%; left: 50%;
@@ -147,7 +144,7 @@
             z-index: 9999;
         }
 
-        #sharePopup input[type="text"] {
+        .popupBox input {
             width: 100%;
             padding: 10px;
             border-radius: 6px;
@@ -155,13 +152,12 @@
             margin-bottom: 15px;
         }
 
-        #sharePopup button {
+        .popupBox button {
             padding: 10px;
             width: 100%;
             border-radius: 6px;
             border: none;
         }
-
     </style>
 </head>
 
@@ -176,7 +172,6 @@
 
     <h2>Welcome Back, <span th:text="${username}"></span>!</h2>
 
-    <!-- Stats -->
     <div class="stats">
         <div class="card">
             <h4>Total Files</h4>
@@ -189,7 +184,6 @@
         </div>
     </div>
 
-    <!-- Files Table -->
     <table>
         <thead>
         <tr>
@@ -212,14 +206,8 @@
 
             <td class="action-links">
                 <a href="#" th:onclick="'openSharePopup(' + ${file.id} + '); return false;'">Share</a>
-                <form th:action="@{'/download/' + ${file.id}}" method="post" style="display:inline;">
-                    <!-- Password field only for hybrid files -->
-                    <input type="password" name="password" placeholder="Password (if required)" style="width:150px;" />
 
-                    <button type="submit" style="background:none;border:none;color:var(--primary-color);cursor:pointer;">
-                        Download
-                    </button>
-                </form>
+                <a href="#" th:onclick="'openDownloadPopup(' + ${file.id} + '); return false;'">Download</a>
 
                 <a th:href="@{'/delete/' + ${file.id}}" class="delete-link">Delete</a>
             </td>
@@ -227,7 +215,6 @@
         </tbody>
     </table>
 
-    <!-- Upload Box -->
     <div class="upload-box">
         <h3>Upload File</h3>
         <form action="/upload" method="post" enctype="multipart/form-data">
@@ -239,10 +226,13 @@
     </div>
 
 </div>
-<!-- Share Popup -->
-<div id="popupOverlay" onclick="closeSharePopup()"></div>
 
-<div id="sharePopup">
+<!-- ========================================================= -->
+<!-- SHARE POPUP -->
+<!-- ========================================================= -->
+<div id="popupOverlay" onclick="closeAllPopups()"></div>
+
+<div id="sharePopup" class="popupBox">
     <h3 style="text-align:center;">Share File</h3>
 
     <form id="shareForm" method="post">
@@ -252,60 +242,63 @@
 
         <label>Select Encryption:</label><br><br>
 
-        <label>
-            <input type="radio" name="method" value="AES" checked onclick="togglePassword()">
-            AES (Default)
-        </label><br>
+        <label><input type="radio" name="method" value="AES" checked onclick="togglePassword()"> AES (Default)</label><br>
+        <label><input type="radio" name="method" value="X25519" onclick="togglePassword()"> X25519</label><br><br>
 
-        <label>
-            <input type="radio" name="method" value="X25519" onclick="togglePassword()">
-            X25519 (Asymmetric)
-        </label>
-
-        <!-- PASSWORD FIELD (hidden unless X25519 is selected) -->
-        <br><br>
         <div id="passwordContainer" style="display:none;">
-            <label>Your Password:</label>
-            <input type="password" name="senderPassword" placeholder="Enter your password">
+            <label>Your Password (for X25519):</label>
+            <input type="password" name="password">
             <br><br>
         </div>
 
         <button style="background:var(--primary-color);color:white;">Share</button>
+        <button type="button" style="margin-top:10px;background:#ccc;" onclick="closeAllPopups()">Cancel</button>
 
-        <button type="button" style="margin-top:10px;background:#ccc;"
-                onclick="closeSharePopup()">Cancel</button>
     </form>
 </div>
 
+<!-- ========================================================= -->
+<!-- DOWNLOAD POPUP -->
+<!-- ========================================================= -->
+<div id="downloadPopup" class="popupBox">
+    <h3 style="text-align:center;">Download File</h3>
+
+    <form id="downloadForm" method="post">
+
+        <label>Enter Password (if required):</label>
+        <input type="password" name="password">
+
+        <button style="background:var(--primary-color);color:white;">Download</button>
+
+        <button type="button" style="margin-top:10px;background:#ccc;" onclick="closeAllPopups()">Cancel</button>
+    </form>
+</div>
+
+
 <script>
+    function togglePassword() {
+        const x25519Checked = document.querySelector('input[name="method"][value="X25519"]').checked;
+        document.getElementById("passwordContainer").style.display = x25519Checked ? "block" : "none";
+    }
+
     function openSharePopup(fileId) {
         document.getElementById("popupOverlay").style.display = "block";
         document.getElementById("sharePopup").style.display = "block";
         document.getElementById("shareForm").action = "/share/" + fileId;
-
-        // Reset selection to AES every time popup opens
-        document.querySelector('input[value="AES"]').checked = true;
-        togglePassword();
     }
 
-    function closeSharePopup() {
+    function openDownloadPopup(fileId) {
+        document.getElementById("popupOverlay").style.display = "block";
+        document.getElementById("downloadPopup").style.display = "block";
+        document.getElementById("downloadForm").action = "/download/" + fileId;
+    }
+
+    function closeAllPopups() {
         document.getElementById("popupOverlay").style.display = "none";
         document.getElementById("sharePopup").style.display = "none";
-    }
-
-    // Show/hide password only if X25519 is selected
-    function togglePassword() {
-        const isHybrid = document.querySelector('input[value="X25519"]').checked;
-        const pwdBlock = document.getElementById("passwordContainer");
-
-        if (isHybrid) {
-            pwdBlock.style.display = "block";
-        } else {
-            pwdBlock.style.display = "none";
-        }
+        document.getElementById("downloadPopup").style.display = "none";
     }
 </script>
-
 
 </body>
 </html>

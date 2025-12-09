@@ -51,64 +51,62 @@ public class FileController {
     @PostMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadFile(
             @PathVariable Long id,
-            @RequestParam(name = "password", required = false) String password,
-            Authentication auth
+            @RequestParam("password") String password,
+            Authentication auth,
+            Model model
     ) {
 
-        // Fetch raw stored file entry (encrypted bytes + hybrid metadata)
-        FileEntity raw = fileService.getRawFile(id);
-        if (raw == null) {
+        String username = auth.getName();
+
+        // STEP 1: Load file (without auto-decrypt)
+        FileEntity file = fileService.getRawFile(id);
+        if (file == null) {
             return ResponseEntity.notFound().build();
         }
 
-        // Detect hybrid sharing by presence of hybrid fields
-        boolean isHybrid = raw.getEncryptedKey() != null
-                && raw.getSenderPublicKey() != null
-                && raw.getKeyIv() != null;
+        byte[] decrypted;
 
         try {
-            if (isHybrid) {
-                // For hybrid downloads, user must provide their password
-                if (password == null || password.isBlank()) {
-                    // client didn't provide password
-                    return ResponseEntity.badRequest().build();
-                }
+            // STEP 2: Check if hybrid fields exist
+            if (file.getEncryptedKey() != null &&
+                    file.getSenderPublicKey() != null &&
+                    file.getKeyIv() != null) {
 
-                byte[] decrypted = fileService.decryptHybridFile(raw, password, auth.getName());
-                if (decrypted == null) {
-                    // decrypt failure (wrong password or other error)
-                    return ResponseEntity.status(400).build();
-                }
+                // HYBRID FILE DECRYPTION
+                decrypted = fileService.decryptHybridFile(file, password, username);
 
-                return ResponseEntity.ok()
-                        .header("Content-Disposition", "attachment; filename=\"" + raw.getFileName() + "\"")
-                        .header("Content-Type", raw.getFileType())
-                        .body(decrypted);
             } else {
-                // AES-only file: use existing service method that returns decrypted FileEntity
-                FileEntity decryptedFile = fileService.getFile(id);
-                if (decryptedFile == null) return ResponseEntity.notFound().build();
-
-                return ResponseEntity.ok()
-                        .header("Content-Disposition", "attachment; filename=\"" + decryptedFile.getFileName() + "\"")
-                        .header("Content-Type", decryptedFile.getFileType())
-                        .body(decryptedFile.getData());
+                // AES-ONLY FILE
+                decrypted = fileService.decryptAESOnly(file);
             }
+
+            if (decrypted == null) {
+                model.addAttribute("error", "Wrong password or decryption failed!");
+                return ResponseEntity.badRequest().build();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.badRequest().build();
         }
+
+        // STEP 3: Return decrypted file to user
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + file.getFileName() + "\"")
+                .header("Content-Type", file.getFileType())
+                .body(decrypted);
     }
 
     @PostMapping("/share/{id}")
     public String shareFile(@PathVariable("id") Long id,
                             @RequestParam("targetUser") String targetUser,
                             @RequestParam("method") String method,
+                            @RequestParam(value = "password", required = false) String password,
                             Authentication auth,
                             Model model) {
 
-        // AES is default; for AES we pass null password
-        fileService.shareFile(id, targetUser, method, null);
+        // Pass the password to service (null is OK for AES)
+        fileService.shareFile(id, targetUser, method, password);
 
         model.addAttribute("success",
                 "File shared with " + targetUser + " using " + method + " successfully!");
@@ -117,4 +115,5 @@ public class FileController {
 
         return "dashboard";
     }
+
 }

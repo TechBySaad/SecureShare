@@ -295,6 +295,11 @@ public class FileService {
             return null;
         }
     }
+    public byte[] decryptAESOnly(FileEntity file) throws Exception {
+        SecretKey key = AESUtil.getAppKey();
+        return AESUtil.decrypt(file.getData(), key);
+    }
+
 
     /**
      * Return the raw FileEntity as stored in DB (no decryption).
