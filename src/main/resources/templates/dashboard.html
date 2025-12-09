@@ -291,7 +291,21 @@
 
             <td class="action-links">
                 <a href="#" th:onclick="'openSharePopup(' + ${file.id} + '); return false;'">Share</a>
-                <a href="#" th:onclick="'openDownloadPopup(' + ${file.id} + '); return false;'">Download</a>
+
+                <!-- If file is HYBRID (X25519), show password popup -->
+                <a href="#"
+                   th:if="${file.encryptedKey != null}"
+                   th:onclick="'openDownloadPopup(' + ${file.id} + '); return false;'">
+                    Download
+                </a>
+
+                <!-- If file is AES-only, download directly without password -->
+                <a th:if="${file.encryptedKey == null}"
+                   th:href="@{'/download/' + ${file.id}}"
+                   style="color: var(--primary-color); text-decoration: none;">
+                    Download
+                </a>
+
                 <a th:href="@{'/delete/' + ${file.id}}" class="delete-link">Delete</a>
             </td>
         </tr>

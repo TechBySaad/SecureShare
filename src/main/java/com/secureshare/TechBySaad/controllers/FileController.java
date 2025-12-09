@@ -43,6 +43,38 @@ public class FileController {
         return "redirect:/dashboard";
     }
 
+    @GetMapping("/download/{id}")
+    public ResponseEntity<?> downloadAESFile(@PathVariable Long id, Authentication auth) {
+
+        FileEntity file = fileService.getRawFile(id);
+        if (file == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // If this is a hybrid file, this GET should NOT work
+        boolean isHybrid =
+                file.getEncryptedKey() != null &&
+                        file.getSenderPublicKey() != null &&
+                        file.getKeyIv() != null;
+
+        if (isHybrid) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Password required for X25519-encrypted file.");
+        }
+
+        // AES-only → decrypt with application key
+        byte[] decrypted = fileService.decryptAESOnly(file);
+        if (decrypted == null) {
+            return ResponseEntity.badRequest().body("Failed to decrypt AES file.");
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + file.getFileName() + "\"")
+                .header("Content-Type", file.getFileType())
+                .body(decrypted);
+    }
+
     @PostMapping("/download/{id}")
     public ResponseEntity<?> downloadFile(
             @PathVariable Long id,
