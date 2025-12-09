@@ -212,7 +212,15 @@
 
             <td class="action-links">
                 <a href="#" th:onclick="'openSharePopup(' + ${file.id} + '); return false;'">Share</a>
-                <a th:href="@{'/download/' + ${file.id}}">Download</a>
+                <form th:action="@{'/download/' + ${file.id}}" method="post" style="display:inline;">
+                    <!-- Password field only for hybrid files -->
+                    <input type="password" name="password" placeholder="Password (if required)" style="width:150px;" />
+
+                    <button type="submit" style="background:none;border:none;color:var(--primary-color);cursor:pointer;">
+                        Download
+                    </button>
+                </form>
+
                 <a th:href="@{'/delete/' + ${file.id}}" class="delete-link">Delete</a>
             </td>
         </tr>
@@ -231,7 +239,6 @@
     </div>
 
 </div>
-
 <!-- Share Popup -->
 <div id="popupOverlay" onclick="closeSharePopup()"></div>
 
@@ -245,10 +252,23 @@
 
         <label>Select Encryption:</label><br><br>
 
-        <label><input type="radio" name="method" value="AES" checked> AES (Default)</label><br>
-        <label><input type="radio" name="method" value="X25519"> X25519 (Asymmetric)</label>
+        <label>
+            <input type="radio" name="method" value="AES" checked onclick="togglePassword()">
+            AES (Default)
+        </label><br>
 
+        <label>
+            <input type="radio" name="method" value="X25519" onclick="togglePassword()">
+            X25519 (Asymmetric)
+        </label>
+
+        <!-- PASSWORD FIELD (hidden unless X25519 is selected) -->
         <br><br>
+        <div id="passwordContainer" style="display:none;">
+            <label>Your Password:</label>
+            <input type="password" name="senderPassword" placeholder="Enter your password">
+            <br><br>
+        </div>
 
         <button style="background:var(--primary-color);color:white;">Share</button>
 
@@ -262,13 +282,30 @@
         document.getElementById("popupOverlay").style.display = "block";
         document.getElementById("sharePopup").style.display = "block";
         document.getElementById("shareForm").action = "/share/" + fileId;
+
+        // Reset selection to AES every time popup opens
+        document.querySelector('input[value="AES"]').checked = true;
+        togglePassword();
     }
 
     function closeSharePopup() {
         document.getElementById("popupOverlay").style.display = "none";
         document.getElementById("sharePopup").style.display = "none";
     }
+
+    // Show/hide password only if X25519 is selected
+    function togglePassword() {
+        const isHybrid = document.querySelector('input[value="X25519"]').checked;
+        const pwdBlock = document.getElementById("passwordContainer");
+
+        if (isHybrid) {
+            pwdBlock.style.display = "block";
+        } else {
+            pwdBlock.style.display = "none";
+        }
+    }
 </script>
+
 
 </body>
 </html>

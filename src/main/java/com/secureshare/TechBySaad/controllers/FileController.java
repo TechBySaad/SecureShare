@@ -42,19 +42,62 @@ public class FileController {
         return "redirect:/dashboard";
     }
 
-    @GetMapping("/download/{id}")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) {
+    /**
+     * Download endpoint:
+     * - Uses POST because the password is sent in request body/params (safer than GET).
+     * - If the file is hybrid (has encryptedKey + keyIv + senderPublicKey) we require the user's password.
+     * - For AES-only files we use existing AES flow.
+     */
+    @PostMapping("/download/{id}")
+    public ResponseEntity<byte[]> downloadFile(
+            @PathVariable Long id,
+            @RequestParam(name = "password", required = false) String password,
+            Authentication auth
+    ) {
 
-        FileEntity file = fileService.getFile(id);
-
-        if (file == null) {
+        // Fetch raw stored file entry (encrypted bytes + hybrid metadata)
+        FileEntity raw = fileService.getRawFile(id);
+        if (raw == null) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"" + file.getFileName() + "\"")
-                .header("Content-Type", file.getFileType())
-                .body(file.getData());
+        // Detect hybrid sharing by presence of hybrid fields
+        boolean isHybrid = raw.getEncryptedKey() != null
+                && raw.getSenderPublicKey() != null
+                && raw.getKeyIv() != null;
+
+        try {
+            if (isHybrid) {
+                // For hybrid downloads, user must provide their password
+                if (password == null || password.isBlank()) {
+                    // client didn't provide password
+                    return ResponseEntity.badRequest().build();
+                }
+
+                byte[] decrypted = fileService.decryptHybridFile(raw, password, auth.getName());
+                if (decrypted == null) {
+                    // decrypt failure (wrong password or other error)
+                    return ResponseEntity.status(400).build();
+                }
+
+                return ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=\"" + raw.getFileName() + "\"")
+                        .header("Content-Type", raw.getFileType())
+                        .body(decrypted);
+            } else {
+                // AES-only file: use existing service method that returns decrypted FileEntity
+                FileEntity decryptedFile = fileService.getFile(id);
+                if (decryptedFile == null) return ResponseEntity.notFound().build();
+
+                return ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=\"" + decryptedFile.getFileName() + "\"")
+                        .header("Content-Type", decryptedFile.getFileType())
+                        .body(decryptedFile.getData());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @PostMapping("/share/{id}")
@@ -64,8 +107,8 @@ public class FileController {
                             Authentication auth,
                             Model model) {
 
-        // AES is default
-        fileService.shareFile(id, targetUser, "AES", null);
+        // AES is default; for AES we pass null password
+        fileService.shareFile(id, targetUser, method, null);
 
         model.addAttribute("success",
                 "File shared with " + targetUser + " using " + method + " successfully!");
@@ -75,4 +118,3 @@ public class FileController {
         return "dashboard";
     }
 }
-

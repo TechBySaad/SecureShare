@@ -296,6 +296,14 @@ public class FileService {
         }
     }
 
+    /**
+     * Return the raw FileEntity as stored in DB (no decryption).
+     * Used by controllers to decide AES vs hybrid flows.
+     */
+    public FileEntity getRawFile(Long id) {
+        return fileRepository.findById(id).orElse(null);
+    }
+
     // ------------------------------------------------------------
 // USER STORAGE STATS
 // ------------------------------------------------------------
